@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Redirect</title>
+  <!-- Link to external CSS file or include a <style> block for simplicity -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <main>
+    <h1>Enter Your Dynatrace Tenant ID, example ABC12345</h1>
+    <form id="redirectForm" novalidate>
+      <label for="codeInput">Code (3 letters followed by 5 digits):</label>
+      <input 
+        type="text" 
+        id="codeInput" 
+        name="code" 
+        placeholder="e.g., ABC12345" 
+        required 
+      />
+      <button type="submit">Go</button>
+      <p class="error-message" id="errorMsg" aria-live="polite"></p>
+    </form>
+  </main>
+
+  <!-- Include the JavaScript at the end of body for better performance -->
+  <script src="app.js"></script>
+</body>
+</html>
