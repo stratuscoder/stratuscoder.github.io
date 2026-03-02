@@ -2,11 +2,27 @@
 body {
   font-family: Arial, sans-serif; /* Use a clean, modern font (you can import Google Fonts for a more unique look) */
   background: #f4f4f4;
-  margin: 0; 
   display: flex;
   align-items: center;
   justify-content: center;
+
+  /* The image used */
+  background-image: url('dynatrace.png');
+
+  /* Center the image and prevent it from repeating */
+  background-position: top left;
+  background-repeat: no-repeat;
+
+  /* Key property: Scales the image to cover the entire container (the viewport) */
+  background-size: cover;
+
+  /* Fixed stays in place during scroll; use 'scroll' if you want it to move */
+  background-attachment: fixed;
+
+  /* Ensure the body covers at least the full height of the viewport */
   min-height: 100vh;
+  margin: 0;
+
 }
 
 main {
