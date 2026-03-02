@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Controls</title>
+    <!-- Bootstrap core CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+<style>
+.carousel-item {
+  height: 100vh;
+  min-height: 350px;
+  background: no-repeat center center scroll;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+</style>
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="#">Gary's Home Office Controls</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+    <div class="collapse navbar-collapse" id="navbarResponsive">
+      <ul class="navbar-nav ml-auto" style="background-color: white;">
+        <li class="nav-item active">
+          <a class="nav-link" href="#">
+                <span class="sr-only">(current)</span>
+              </a>
+        </li>
+        <li class="nav-item">
+            <button class="btn btn-light" id="changeLED" data-id="3" style="color: black';" >[Available]</button>
+        </li>
+        <li class="nav-item">
+          <button class="btn btn-danger" id="changeLED" data-id="2" style="color: black';">[Busy]</button>
+        </li>
+        <li class="nav-item">
+          <button class="btn btn-info" id="changeLED" data-id="1" style="color: black';">[Thirsty/Hungry]</button>
+        </li>
+        <li class="nav-item">
+            <button class="btn btn-success" id="changeLED" data-id="4" style="color: black';">[On A Call]</button>
+          </li>
+          <li class="nav-item">
+            <button class="btn btn-dark" id="changeLED" data-id="0" style="color: black';">[Turn Off]</button>
+          </li>
+          <li class="nav-item">
+            <input type="color" id="bottom" name="bottom" value="#ff0000"><br/>
+            <input type="color" id="top" name="top" value="#00ff00">
+          </li>
+          <li class="nav-item">
+            <button class="btn btn-info" id="changeLED" data-id="-1" style="color: black';">[Custom Colors]</button>
+          </li>
+          <li>
+            <span id="result" class="badge badge-primary"></span>
+          </li>
+        </ul>
+    </div>
+  </div>
+</nav>
+
+<header>
+  <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+<!--
+
+    <ol class="carousel-indicators">
+      <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+      <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+      <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+    </ol>
+//-->
+    <div class="carousel-inner" role="listbox">
+      <!-- Slide One - Set the background image for this slide in the line below -->
+       <div class="carousel-item active" style="background-image: url('https://source.unsplash.com/szFUQoyvrxM/1920x1080')">
+        <div class="carousel-caption d-none d-md-block">
+        </div>
+      </div>
+    </div>
+    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="sr-only">Previous</span>
+        </a>
+    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="sr-only">Next</span>
+        </a>
+  </div>
+</header>
+
+<!-- Page Content -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+<script>   
+  $(document).ready(function()
+  {
+      var topclr = $('#top');
+      var bottomclr = $('#bottom');
+      var urls = ["api?top_init&bottom_init&logo=000000|000000|000000|000000",
+            "api?logo_reset&top_init&top_bg=ffffff&top=0|12|00ff00&top_whirl=240&bottom_init&bottom_bg=ffffff&bottom=0|12|00ff00&bottom_whirl=240|ccw",
+            "api?logo_reset&top_init&bottom_init&top_bg=ff0000&bottom_bg=ff0000",
+            "api?logo_reset&top_init&bottom_init&top_bg=ffffff&bottom_bg=ffffff",
+            "api?logo_reset&top_init&bottom_init&top_bg=ff0000&bottom_bg=00ff00"];
+      var tclrs = ["000000","ffffff","ff0000","ffffff","ff0000"];
+      var bclrs = ["000000","ffffff","ff0000","ffffff","00ff00"];
+      var baseUrl = "https://ufo/";
+      var r = document.getElementById("result");
+  
+      $("#changeLED").click(function(e){
+        e.preventDefault();
+        var id = parseInt($(this).attr('data-id'));
+        r.class = "badge badge-primary";
+        r.innerHTML = "sending";
+        var uri = null;    
+        if (id == -1)
+        {
+          uri = baseUrl + "api?top_init&bottom_init&top_bg=" + topclr.val().substr(1,6) + "&bottom_bg=" + bottomclr.val().substr(1,6)
+        } else {
+          uri = baseUrl + urls[parseInt(id)];
+        }
+        $.ajax({
+            url:  uri,
+            type: "GET",
+            success: function (result) {
+                topclr.val("#"+tclrs[id]);
+                bottomclr.val("#"+bclrs[id]);      
+                r.class = "badge badge-success";
+                r.innerHTML = "sent";    
+            },
+            error: function (error) {
+                r.class = "badge badge-danger";
+                r.innerHTML = "failed";        
+            }
+        })    
+      })
+  })
+</script>
+
+</body>
+</html>
