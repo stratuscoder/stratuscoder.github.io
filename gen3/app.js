@@ -2,7 +2,7 @@
 
 // Select form and input elements
 const form = document.getElementById('redirectForm');
-const codeInput = document.getElementById('codeInput');
+const id = document.getElementById('id');
 const errorMsg = document.getElementById('errorMsg');
 
 // Define the regex pattern: ^ = start, [A-Za-z]{3} = 3 letters, \d{5} = 5 digits, $ = end.
@@ -11,16 +11,16 @@ const codePattern = /^[A-Za-z]{3}\d{5}$/;
 form.addEventListener('submit', function(event) {
   event.preventDefault(); // Stop form from submitting normally
 
-  const codeValue = codeInput.value.trim();
+  const testValue = id.value.trim();
   let error = "";
 
   // 1. Check for empty input
-  if (codeValue === "") {
-    error = "Please enter your code (cannot be empty).";
+  if (testValue === "") {
+    error = "Please enter your tenant ID (cannot be empty).";
   }
   // 2. Check format against the regex pattern
-  else if (!codePattern.test(codeValue)) {
-    error = "Invalid format. Use 3 letters followed by 5 digits (e.g., ABC12345).";
+  else if (!codePattern.test(testValue)) {
+    error = "Invalid format. Use 3 letters followed by 5 digits (e.g., abc12345).";
   }
 
   if (error) {
@@ -33,8 +33,8 @@ form.addEventListener('submit', function(event) {
     errorMsg.textContent = "";
     errorMsg.style.display = "none";
     // Construct the destination URL using the input
-    const userCode = encodeURIComponent(codeValue);
-    const destinationURL = "https://" + userCode + ".apps.dynatrace.com/ui/apps/dynatrace.dashboards";
+    const tenantId = encodeURIComponent(testValue);
+    const destinationURL = "https://" + tenantId + ".apps.dynatrace.com/ui/apps/dynatrace.dashboards";
     // Redirect to the new URL
     window.location.href = destinationURL;
   }
