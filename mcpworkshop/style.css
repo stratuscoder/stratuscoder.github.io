@@ -8,7 +8,7 @@ body {
   justify-content: center;
 
   /* The image used */
-  background-image: url('linkbglogo.png');
+  background-image: url('linkbg.png');
 
   /* Center the image and prevent it from repeating */
   background-position: top left;
