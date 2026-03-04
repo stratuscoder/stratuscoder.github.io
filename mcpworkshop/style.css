@@ -23,8 +23,6 @@ body {
   /* Ensure the body covers at least the full height of the viewport */
   min-height: 100vh;
   margin: 0;
-  padding: 40px;
-
 }
 
 main {
