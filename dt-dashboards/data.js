@@ -5,6 +5,7 @@ const cardData = [
         title: 'Full Stack Adaptive Traffic Management',
         description: 'Shows Full Stack adaptive traffic management.',
         linkUrl: './dashboards/fsadaptivetrafficmgmt.json',
+        fileName: `fsadaptivetrafficmgmt.json`,
         linkText: 'Download Dashboard',
         category: 'OneAgent',
         tags: [
