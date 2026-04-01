@@ -61,5 +61,35 @@ function populateCards() {
 
 }
 
+function downloadJsonFromUrl(url, filename) {
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                // Convert JSON object to a string
+                const jsonString = JSON.stringify(data, null, 2); 
+                // Create a Blob object
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                // Create a temporary URL for the blob
+                const href = URL.createObjectURL(blob);
+
+                // Create a temporary anchor element
+                const anchorElement = document.createElement('a');
+                anchorElement.href = href;
+                anchorElement.download = filename; // Set the proposed file name
+                document.body.appendChild(anchorElement); // Required for Firefox
+
+                // Simulate a click to trigger the download
+                anchorElement.click();
+
+                // Clean up the temporary URL and element
+                document.body.removeChild(anchorElement);
+                URL.revokeObjectURL(href);
+            })
+            .catch(error => {
+                console.warn('Something went wrong with the download:', error);
+                alert('Could not download the file due to a cross-origin error or network issue.');
+            });
+}
+
 // 3. Call the function to display the cards when the script loads
 populateCards();
