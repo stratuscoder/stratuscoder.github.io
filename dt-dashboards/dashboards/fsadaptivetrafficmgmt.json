@@ -1,0 +1,1384 @@
+{
+  "version": 21,
+  "variables": [
+    {
+      "version": 2,
+      "key": "ExtraIngestFactor",
+      "type": "text",
+      "visible": false,
+      "editable": true,
+      "defaultValue": "1.0"
+    }
+  ],
+  "tiles": {
+    "0": {
+      "title": "",
+      "description": "The **request capture rate** shows captured requests as a percentage of all transactions processed by OneAgent monitored applications or hosts. The **trace capture rate** shows captured traces as a percentage of all observed end-to-end transactions. Because a single trace can contain multiple requests, the trace capture rate can be lower than the request capture rate.",
+      "type": "data",
+      "query": "timeseries {\n  sampled = sum(dt.sfm.oneagent.code_module.requests.sampled), \n  processed = sum(dt.sfm.oneagent.code_module.requests.processed)\n}, nonempty:true\n| fields sampled_sum = arraySum(sampled), processed_sum = arraySum(processed)\n| fields capture_rate = sampled_sum/processed_sum*100",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "Request capture rate",
+          "recordField": "capture_rate",
+          "prefixIcon": "",
+          "trend": {
+            "isVisible": true
+          }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [],
+        "unitsOverrides": [
+          {
+            "identifier": "capture_rate",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1732537313352
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "1": {
+      "title": "",
+      "type": "data",
+      "query": "timeseries {\n  sampled = sum(dt.sfm.oneagent.code_module.traces.sampled),\n  processed = sum(dt.sfm.oneagent.code_module.traces.processed)\n}, nonempty:true \n| fields sampled_sum = arraySum(sampled), processed_sum = arraySum(processed)\n| fields capture_rate = sampled_sum / processed_sum * 100",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "Trace capture rate",
+          "recordField": "capture_rate",
+          "prefixIcon": "",
+          "trend": {
+            "isVisible": true
+          }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [],
+        "unitsOverrides": [
+          {
+            "identifier": "capture_rate",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1732537313352
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "2": {
+      "title": "Full-Stack OneAgent capture rates",
+      "description": "The **request capture rate** represents the ratio between captured requests and the total number of transactions processed by **OneAgent** monitored application or host. \n\nIn this chart, the blue line shows the **trace capture rate** and the red line shows the **request capture rate** over time. The metrics require at least OneAgent version 1.305.",
+      "type": "data",
+      "query": "// 1. Gather data for the timeseries chart\ntimeseries {\n  requests_sampled = sum(dt.sfm.oneagent.code_module.requests.sampled), \n  requests_processed = sum(dt.sfm.oneagent.code_module.requests.processed),\n  traces_sampled = sum(dt.sfm.oneagent.code_module.traces.sampled), \n  traces_processed = sum(dt.sfm.oneagent.code_module.traces.processed)\n}, nonempty:true\n\n// 2. Create the data that will be visualized in the chart\n| fieldsAdd `trace capture rate`=traces_sampled[]/traces_processed[]*100\n| fieldsAdd `trace capture rate`=if(`trace capture rate`[] > 100, 100, else: `trace capture rate`[])\n| fieldsAdd `request capture rate`=requests_sampled[]/requests_processed[]*100\n| fieldsAdd `request capture rate`=if(`request capture rate`[] > 100, 100, else: `request capture rate`[])\n\n// 3. Remove data that is of no use anymore\n| fieldsRemove traces_sampled, traces_processed, requests_sampled, requests_processed",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "truncationMode": "middle",
+          "legend": {
+            "hidden": true
+          },
+          "leftYAxisSettings": {
+            "label": "Oneagent - Code Module - Requests - Sampled • Oneagent - Code Module - Requests - Processed • Oneagent - Code Module - Traces - Sampled • Oneagent - Code Module - Traces - Processed"
+          },
+          "xAxisLabel": "timeframe",
+          "xAxisScaling": "analyzedTimeframe",
+          "tooltip": {
+            "variant": "shared"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": [
+                "trace capture rate"
+              ],
+              "override": {
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-01-default, #134fc9)"
+                }
+              }
+            },
+            {
+              "seriesId": [
+                "request capture rate"
+              ],
+              "override": {
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-themed-fireplace-color-01-default, #ae132d)"
+                }
+              }
+            }
+          ],
+          "fieldMapping": {
+            "leftAxisValues": [
+              "trace capture rate",
+              "request capture rate"
+            ],
+            "timestamp": "timeframe"
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": true,
+        "thresholds": [],
+        "unitsOverrides": [
+          {
+            "identifier": "request capture rate",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": "percent",
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1732539350280
+          },
+          {
+            "identifier": "trace capture rate",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1732539352731
+          }
+        ],
+        "dataMapping": {
+          "displayedFields": [
+            "trace capture rate",
+            "request capture rate"
+          ]
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "3": {
+      "title": "Full-Stack trace data volume",
+      "description": "Amount of trace data ingested from Full-Stack monitored applications or hosts. The chart includes\n\n* The trace data volume captured by OneAgent and regulated by Adaptive Traffic Management (green bars).\n* The Full-Stack included trace volume based on the contributing Full-Stack memory-gibibytes (blue line).\n* The trace data volume ingested from Full-Stack monitored applications or hosts but not regulated by Adaptive Traffic Management (`fullstack-fixed-rate-ingested_bytes_sum`; blue bar). This includes OpenTelemetry spans and other fixed-rate traffic and can exceed the included limit; [the excess will be charged](https://docs.dynatrace.com/docs/shortlink/dps-full-stack#full-stack-traces).",
+      "type": "data",
+      "query": "// 1. Create basic timeseries\ntimeseries { \n\tincluded_limit=avg(dt.billing.traces.maximum_included_fullstack_volume_per_minute), \n\tconfigured_limit=avg(dt.billing.traces.maximum_configured_fullstack_volume_per_minute)\n}, interval:1h, nonempty:true\n\n// 2. Add computed fields to the timeseries\n| fieldsAdd intervalInMinutes = toLong(interval) / 60000000000\n| fieldsAdd configured_limit = configured_limit[] * intervalInMinutes\n| fieldsAdd included_limit = included_limit[] * intervalInMinutes\n\n// 3. Add full-stack traces ingest events to the timeseries\n| append [\n\tfetch dt.system.events\n\t| filter event.type == \"Traces - Ingest & Process\"\n\t| filter licensing_type == \"fullstack-adaptive\" or licensing_type == \"fullstack-fixed-rate\" \n\t| makeTimeseries ingested_bytes_sum = sum(ingested_bytes), time: usage.start, interval:1h, by: {licensing_type}, nonempty:true\n]",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "truncationMode": "middle",
+          "legend": {
+            "hidden": true
+          },
+          "leftYAxisSettings": {
+            "label": "(DPS) Maximum included Full-Stack trace volume • (DPS) Maximum configured Full-Stack trace volume"
+          },
+          "xAxisLabel": "timeframe",
+          "xAxisScaling": "analyzedTimeframe",
+          "tooltip": {
+            "variant": "shared"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": [
+                "included_limit"
+              ],
+              "override": {
+                "geometry": "line",
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-01-default, #134fc9)"
+                }
+              }
+            },
+            {
+              "seriesId": [
+                "configured_limit"
+              ],
+              "override": {
+                "geometry": "line",
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-12-default, #cd3741)"
+                }
+              }
+            },
+            {
+              "seriesId": [
+                "fullstack-adaptive",
+                "ingested_bytes_sum"
+              ],
+              "override": {
+                "geometry": "bar",
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-09-default, #649438)"
+                }
+              }
+            },
+            {
+              "seriesId": [
+                "fullstack-fixed-rate",
+                "ingested_bytes_sum"
+              ],
+              "override": {
+                "geometry": "bar",
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-01-default, #134fc9)"
+                }
+              }
+            }
+          ],
+          "fieldMapping": {
+            "leftAxisValues": [
+              "included_limit",
+              "configured_limit",
+              "ingested_bytes_sum"
+            ],
+            "timestamp": "timeframe"
+          }
+        },
+        "dataMapping": {
+          "displayedFields": [
+            "licensing_type",
+            "included_limit",
+            "configured_limit",
+            "ingested_bytes_sum"
+          ]
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [],
+        "unitsOverrides": [
+          {
+            "identifier": "ingested_bytes_sum",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "gibibyte",
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1732542996496
+          },
+          {
+            "identifier": "configured_limit",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "gibibyte",
+            "decimals": null,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1768937875478
+          },
+          {
+            "identifier": "included_limit",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "gibibyte",
+            "decimals": null,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1768937892090
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "4": {
+      "title": "Full-Stack trace volume",
+      "description": "Dynatrace ingests trace data from multiple sources, which are licensed differently.\n\n* `fullstack-adaptive` shows trace data captured by OneAgent on Full-Stack monitored hosts and applications and regulated by Adaptive Traffic Management.\n* `fullstack-fixed-rate` shows trace data from Full-Stack monitored sources that use fixed-rate sampling (for example, OpenTelemetry spans or fixed-rate OneAgent settings). This traffic still consumes the Full-Stack included trace volume but is not automatically adjusted by Adaptive Traffic Management and can exceed the included limit, with the excess billed as Traces – Ingest & Process.\n* Other series (for example, serverless or OTLP-only sources) represent trace data that is not part of Full-Stack Monitoring and is not controlled by Adaptive Traffic Management.\n\nOn this chart, green bars represent `fullstack-adaptive`, blue bars represent `fullstack-fixed-rate`, magenta bars represent `otlp-trace-ingest`, and red bars represent `serverless` trace data.",
+      "type": "data",
+      "query": "fetch dt.system.events\n| filter event.type == \"Traces - Ingest & Process\"\n| filter licensing_type == \"fullstack-adaptive\" or licensing_type == \"fullstack-fixed-rate\" \n| makeTimeseries ingested_bytes_sum = sum(ingested_bytes), time: usage.start, interval:1h, by: {licensing_type}, nonempty:true",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "dataMapping": {
+          "displayedFields": [
+            "licensing_type"
+          ]
+        },
+        "chartSettings": {
+          "truncationMode": "middle",
+          "legend": {
+            "hidden": true
+          },
+          "xAxisLabel": "timeframe",
+          "xAxisScaling": "analyzedTimeframe",
+          "tooltip": {
+            "variant": "shared"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": [
+                "fullstack-adaptive"
+              ],
+              "override": {
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-09-default, #649438)"
+                }
+              }
+            },
+            {
+              "seriesId": [
+                "fullstack-fixed-rate"
+              ],
+              "override": {
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-01-default, #134fc9)"
+                }
+              }
+            },
+            {
+              "seriesId": [
+                "otlp-trace-ingest"
+              ],
+              "override": {
+                "color": "#b3007d"
+              }
+            },
+            {
+              "seriesId": [
+                "serverless"
+              ],
+              "override": {
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-12-default, #cd3741)"
+                }
+              }
+            }
+          ],
+          "fieldMapping": {
+            "leftAxisValues": [
+              "ingested_bytes_sum"
+            ],
+            "timestamp": "timeframe"
+          }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [],
+        "unitsOverrides": [
+          {
+            "identifier": "ingested_bytes_sum",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "gibibyte",
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1732603950299
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "10": {
+      "title": "Full-Stack trace volume used",
+      "description": "Ingested trace volume, as a percentage of your licensed Full-Stack included trace volume. Adaptive Traffic Management keeps it around the Full-Stack included limit. The algorithm used in Dynatrace accounts for a degree of fluctuation, allowing the used trace volume to exceed 100% without extra charges\n\n* This can exceed 100% if you opted for [Extended trace ingest on top of Full-Stack Monitoring](https://docs.dynatrace.com/docs/shortlink/dps-full-stack#full-stack-traces) , this excess will be charged.\n* This can exceed 100% if you sent OpenTelemetry traces or other fixed rate span data via API from Full-Stack monitored sources, this excess will be charged.",
+      "type": "data",
+      "query": "// 1. Create basic timeseries\ntimeseries { \n\tconfigured_limit=avg(dt.billing.traces.maximum_configured_fullstack_volume_per_minute)\n} , interval:15m, nonempty:true\n\n// 2. Add computed fields to the timeseries\n| fieldsAdd intervalInMinutes = toLong(interval) / 60000000000\n// As we are using \"maximum_configured_fullstack_volume_per_minute\" and an interval of 15m we need to multiply them\n| fieldsAdd configured_limit = configured_limit[] * intervalInMinutes\n\n// 3. Join full-stack traces ingest events to the timeseries\n| join [\n\tfetch dt.system.events\n\t| filter event.type == \"Traces - Ingest & Process\"\n\t| filter licensing_type == \"fullstack-adaptive\" or licensing_type == \"fullstack-fixed-rate\" \n\t| makeTimeseries ingested_bytes_sum = sum(ingested_bytes), time: usage.start, interval:15m, nonempty:true\n], on:{timeframe}, fields:{ingested_bytes_sum}\n\n// 4. Compute a field based on the previous join, then delete the field added by the join\n| fieldsAdd volume_used=ingested_bytes_sum[]/configured_limit[] * 100\n| fieldsRemove configured_limit, ingested_bytes_sum",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "truncationMode": "middle",
+          "legend": {
+            "hidden": true
+          },
+          "leftYAxisSettings": {
+            "label": "(DPS) Maximum included Full-Stack trace volume • (DPS) Maximum configured Full-Stack trace volume"
+          },
+          "xAxisLabel": "timeframe",
+          "xAxisScaling": "analyzedTimeframe",
+          "fieldMapping": {
+            "leftAxisValues": [
+              "volume_used"
+            ],
+            "timestamp": "timeframe"
+          }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6863)"
+                },
+                "comparator": "≥",
+                "label": ""
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #eca440)"
+                },
+                "comparator": "≥",
+                "label": "",
+                "value": 100
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-14-default, #d56b1a)"
+                },
+                "comparator": "≥",
+                "label": ""
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "volume_used",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1732542996496
+          }
+        ],
+        "dataMapping": {
+          "displayedFields": [
+            "volume_used"
+          ]
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "11": {
+      "title": "Average size of Full-Stack spans",
+      "description": "Average size of spans ingested from Full-Stack monitored applications or hosts. Typical values are in the 1.5-2 KiB range; if the span size is larger and the used trace volume is high (or the trace capture rate is low), you might be capturing a lot of data per span. In this chart, the green line shows spans from adaptive Full-Stack trace ingest (`fullstack-adaptive`), and the blue line shows spans from fixed-rate Full-Stack trace ingest (`fullstack-fixed-rate`).",
+      "type": "data",
+      "query": "// 1. Fetch the necessary data\nfetch dt.system.events\n\n// 2. Filter the data out\n| filter event.type == \"Traces - Ingest & Process\"\n| filter licensing_type == \"fullstack-adaptive\" or licensing_type == \"fullstack-fixed-rate\" \n\n// 3. Make a timeseries out of the remaining data\n| makeTimeseries {\n\tingested_bytes_sum = sum(ingested_bytes), ingested_spans_sum=sum(ingested_spans)\n}, time: usage.start, interval:15m, by: {licensing_type}, nonempty:true\n\n// 4. Add computed fields to the timeseries\n| fieldsAdd avg_span_size = ingested_bytes_sum[]/ingested_spans_sum[]\n| fieldsRemove ingested_bytes_sum,ingested_spans_sum",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "truncationMode": "middle",
+          "legend": {
+            "hidden": true
+          },
+          "leftYAxisSettings": {
+            "label": "(DPS) Maximum included Full-Stack trace volume • (DPS) Maximum configured Full-Stack trace volume"
+          },
+          "xAxisLabel": "timeframe",
+          "xAxisScaling": "analyzedTimeframe",
+          "tooltip": {
+            "variant": "shared"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": [
+                "fullstack-adaptive"
+              ],
+              "override": {
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-09-default, #649438)"
+                }
+              }
+            },
+            {
+              "seriesId": [
+                "fullstack-fixed-rate"
+              ],
+              "override": {
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-01-default, #134fc9)"
+                }
+              }
+            }
+          ],
+          "fieldMapping": {
+            "leftAxisValues": [
+              "avg_span_size"
+            ],
+            "timestamp": "timeframe"
+          }
+        },
+        "dataMapping": {
+          "displayedFields": [
+            "licensing_type"
+          ]
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6863)"
+                },
+                "comparator": "≥",
+                "label": ""
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #eca440)"
+                },
+                "comparator": "≥",
+                "label": ""
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #c4233b)"
+                },
+                "comparator": "≥",
+                "label": ""
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "avg_span_size",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "kibibyte",
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1732542996496
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "12": {
+      "title": "Contributing Full-Stack memory-gibibyte",
+      "description": "Contributing Full-Stack memory-gibibytes from monitored hosts and applications. The blue line (`contributing_gib`) is derived from `dt.billing.full_stack_monitoring.usage` and normalized to represent contributing GiB per hour, matching the DPS **Full-Stack Monitoring billing usage**. This value is used to calculate your Full-Stack included trace volume (200 KiB of trace data per minute, or 3000 KiB per 15-minute interval, for each contributing GiB).",
+      "type": "data",
+      "query": "timeseries contributing_gib = sum(dt.billing.full_stack_monitoring.usage), interval:15m, nonempty:true\n| fieldsAdd intervalInMinutes = toLong(interval) / 60000000000\n| fieldsAdd contributing_gib = contributing_gib[] * (60 / intervalInMinutes)",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "truncationMode": "middle",
+          "legend": {
+            "hidden": true
+          },
+          "leftYAxisSettings": {
+            "label": "(DPS) Full-Stack Monitoring billing usage"
+          },
+          "xAxisLabel": "timeframe",
+          "xAxisScaling": "analyzedTimeframe",
+          "fieldMapping": {
+            "leftAxisValues": [
+              "contributing_gib"
+            ],
+            "timestamp": "timeframe"
+          }
+        },
+        "autoSelectVisualization": true,
+        "thresholds": [],
+        "unitsOverrides": [
+          {
+            "identifier": "sum(dt.billing.full_stack_monitoring.usage)",
+            "unitCategory": "data",
+            "baseUnit": "gibibyte",
+            "displayUnit": null,
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1732796275900
+          }
+        ],
+        "dataMapping": {
+          "displayedFields": [
+            "contributing_gib"
+          ]
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "17": {
+      "title": "Adaptive trace volume per contributing memory-gibibytes per minute",
+      "description": "Average adaptive trace volume every 15 minutes (`trace_volume_per_gibh`; green area). Full-Stack Monitoring starts from 200 KiB/min of trace volume per contributing GiB (3000 KiB per 15-minute interval), which is highlighted by the threshold line in the chart. ",
+      "type": "data",
+      "query": "// 1. Fetch the necessary data\nfetch dt.system.events\n\n// 2. Filter the data out\n| filter event.type == \"Traces - Ingest & Process\"\n| filter licensing_type == \"fullstack-adaptive\"\n\n// 3. Make a timeseries out of the remaining data\n| makeTimeseries ingested_bytes_sum = sum(ingested_bytes), time: usage.start, interval:15m, nonempty:true\n\n// 4. Join a timeseries\n| join [\n  timeseries contributing_gib=sum(dt.billing.full_stack_monitoring.usage), interval:15m, nonempty:true\n  | fieldsAdd  intervalInMinutes = toLong(interval) / 60000000000\n  | fieldsAdd contributing_gib = contributing_gib[] * (60 / intervalInMinutes)\n], kind:outer, on:{timeframe}, fields: {contributing_gib}\n\n// 5. Add computed fields to the joined timeseries\n| fieldsAdd  intervalInMinutes = toLong(interval) / 60000000000\n| fieldsAdd ingested_bytes_sum = ingested_bytes_sum[] / intervalInMinutes\n| fieldsAdd trace_volume_per_gibh = ingested_bytes_sum[] / contributing_gib[]\n| fieldsRemove ingested_bytes_sum, contributing_gib",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "truncationMode": "middle",
+          "legend": {
+            "hidden": true
+          },
+          "leftYAxisSettings": {
+            "label": "(DPS) Full-Stack Monitoring billing usage"
+          },
+          "xAxisLabel": "timeframe",
+          "xAxisScaling": "analyzedTimeframe",
+          "seriesOverrides": [
+            {
+              "seriesId": [
+                "trace_volume_per_gibh"
+              ],
+              "override": {
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-09-default, #649438)"
+                }
+              }
+            }
+          ],
+          "fieldMapping": {
+            "leftAxisValues": [
+              "trace_volume_per_gibh"
+            ],
+            "timestamp": "timeframe"
+          }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6863)"
+                },
+                "comparator": "≥",
+                "label": ""
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #eca440)"
+                },
+                "comparator": "≥",
+                "label": "",
+                "value": 204800
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-14-default, #d56b1a)"
+                },
+                "comparator": "≥",
+                "label": ""
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "trace_volume_per_gibh",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "kibibyte",
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1737022910178
+          }
+        ],
+        "dataMapping": {
+          "displayedFields": [
+            "trace_volume_per_gibh"
+          ]
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "18": {
+      "title": "Fixed rate trace volume per contributing memory-gibibytes per minute",
+      "description": "Average fixed-rate trace volume every 15 minutes for fixed-rate Full-Stack traces (`trace_volume_per_gibh`; blue area). This helps you compare fixed-rate trace volume per contributing GiB with the default 200 KiB/min (3000 KiB per 15-minute interval) included with Full-Stack Monitoring; thresholds highlight when volume per GiB approaches or exceeds this level.",
+      "type": "data",
+      "query": "// 1. Fetch the necessary data\nfetch dt.system.events\n\n// 2. Filter the data out\n| filter event.type == \"Traces - Ingest & Process\"\n| filter licensing_type == \"fullstack-fixed-rate\"\n\n// 3. Make a timeseries out of the remaining data\n| makeTimeseries ingested_bytes_sum = sum(ingested_bytes), time: usage.start, interval:15m, nonempty:true\n\n// 4. Join a timeseries\n| join [\n  timeseries contributing_gib=sum(dt.billing.full_stack_monitoring.usage), interval:15m, nonempty:true\n  | fieldsAdd  intervalInMinutes = toLong(interval) / 60000000000\n  | fieldsAdd contributing_gib = contributing_gib[] * (60 / intervalInMinutes)\n], kind:outer, on:{timeframe}, fields: {contributing_gib}\n\n// 5. Add computed fields to the joined timeseries\n| fieldsAdd  intervalInMinutes = toLong(interval) / 60000000000\n| fieldsAdd ingested_bytes_sum = ingested_bytes_sum[] / intervalInMinutes\n| fieldsAdd trace_volume_per_gibh = ingested_bytes_sum[] / contributing_gib[]\n| fieldsRemove ingested_bytes_sum, contributing_gib",
+      "visualization": "areaChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "truncationMode": "middle",
+          "legend": {
+            "hidden": true
+          },
+          "leftYAxisSettings": {
+            "label": "(DPS) Full-Stack Monitoring billing usage"
+          },
+          "xAxisLabel": "timeframe",
+          "xAxisScaling": "analyzedTimeframe",
+          "seriesOverrides": [
+            {
+              "seriesId": [
+                "trace_volume_per_gibh"
+              ],
+              "override": {
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-01-default, #134fc9)"
+                }
+              }
+            }
+          ],
+          "fieldMapping": {
+            "leftAxisValues": [
+              "trace_volume_per_gibh"
+            ],
+            "timestamp": "timeframe"
+          }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6863)"
+                },
+                "comparator": "≥",
+                "label": ""
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #eca440)"
+                },
+                "comparator": "≥",
+                "label": "",
+                "value": 204800
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #c4233b)"
+                },
+                "comparator": "≥",
+                "label": "",
+                "value": 225280
+              }
+            ]
+          }
+        ],
+        "unitsOverrides": [
+          {
+            "identifier": "trace_volume_per_gibh",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "kibibyte",
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1737022910178
+          }
+        ],
+        "dataMapping": {
+          "displayedFields": [
+            "trace_volume_per_gibh"
+          ]
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "21": {
+      "title": "Full-Stack trace ingest and billable extended ingest",
+      "description": "The relationship between the amount of ingested trace data (`included_ingested_byte_sum`; green bar) and the Full-Stack included trace volume (`included_limit`; blue line). If you opted for Extended trace ingest for Full-Stack Monitoring, Adaptive Traffic Management adjusts trace ingest against the configured limit (`configured_limit`; red line), and the extended trace volume charged via Traces – Ingest & Process is shown as `billingAmount` (orange bar).",
+      "type": "data",
+      "query": "// 1. Fetch the necessary data\nfetch dt.system.events\n\n// 2. Filter the data out\n| filter event.type == \"Traces - Ingest & Process\"\n| filter licensing_type == \"fullstack-adaptive\" \n\n//| fieldsAdd ingested_bytes = ingested_bytes* toLong($ExtraIngestFactor)\n\n// 3. Make a timeseries out of the remaining data\n| makeTimeseries ingested_bytes_sum = sum(ingested_bytes), time: usage.start, interval:15m, nonempty:true\n\n// 4. Join a timeseries\n| join [\n  timeseries { \n    included_limit = avg(dt.billing.traces.maximum_included_fullstack_volume_per_minute), \n    configured_limit = avg(dt.billing.traces.maximum_configured_fullstack_volume_per_minute)\n  }, interval:15m, nonempty:true\n  | fieldsAdd intervalInMinutes = toLong(interval) / 60000000000\n  | fieldsAdd included_limit = included_limit[] * intervalInMinutes\n  | fieldsAdd configured_limit = configured_limit[] * intervalInMinutes\n  | fieldsAdd billable = if(configured_limit[]-included_limit[]>0,true, else: false)\n] , kind:outer, on:{timeframe}, fields: {included_limit,configured_limit,billable}\n\n// 5. Add computed fields to the joined timeseries\n| fieldsAdd included_ingested_byte_sum = if(billable[],included_limit[],else:ingested_bytes_sum[])\n| fieldsAdd billingAmount = if (billable[],ingested_bytes_sum[] - included_limit[],else: 0)\n| fieldsRemove billable,ingested_bytes_sum",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "truncationMode": "middle",
+          "legend": {
+            "hidden": true
+          },
+          "leftYAxisSettings": {
+            "label": "(DPS) Maximum included Full-Stack trace volume • (DPS) Maximum configured Full-Stack trace volume",
+            "min": {
+              "mode": "custom",
+              "value": 0
+            }
+          },
+          "xAxisLabel": "timeframe",
+          "xAxisScaling": "analyzedTimeframe",
+          "tooltip": {
+            "variant": "shared"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": [
+                "included_limit"
+              ],
+              "override": {
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-01-default, #134fc9)"
+                }
+              }
+            },
+            {
+              "seriesId": [
+                "configured_limit"
+              ],
+              "override": {
+                "color": {
+                  "Default": "var(--dt-colors-charts-loglevel-emergency-default, #ae132d)"
+                }
+              }
+            },
+            {
+              "seriesId": [
+                "billingAmount"
+              ],
+              "override": {
+                "geometry": "bar",
+                "color": {
+                  "Default": "var(--dt-colors-charts-loglevel-severe-default, #d56b1a)"
+                }
+              }
+            },
+            {
+              "seriesId": [
+                "included_ingested_byte_sum"
+              ],
+              "override": {
+                "geometry": "bar",
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-09-default, #649438)"
+                }
+              }
+            }
+          ],
+          "fieldMapping": {
+            "leftAxisValues": [
+              "included_limit",
+              "configured_limit",
+              "included_ingested_byte_sum",
+              "billingAmount"
+            ],
+            "timestamp": "timeframe"
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [],
+        "unitsOverrides": [
+          {
+            "identifier": "included_ingested_byte_sum",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "gibibyte",
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1737466886698
+          },
+          {
+            "identifier": "included_limit",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "gibibyte",
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1737466904141
+          },
+          {
+            "identifier": "configured_limit",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "gibibyte",
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1737466908720
+          },
+          {
+            "identifier": "billingAmount",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "gibibyte",
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1737466911292
+          }
+        ],
+        "dataMapping": {
+          "displayedFields": [
+            "included_limit",
+            "configured_limit",
+            "included_ingested_byte_sum",
+            "billingAmount"
+          ]
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "26": {
+      "type": "markdown",
+      "content": "# Factor: $ExtraIngestFactor"
+    },
+    "27": {
+      "type": "markdown",
+      "content": "### Extended trace ingest for Full-Stack Monitoring"
+    },
+    "28": {
+      "title": "Full-Stack extended trace ingest calculator",
+      "description": "Use this chart to simulate Extended trace ingest for Full-Stack Monitoring. Set the `ExtraIngestFactor` dashboard variable to specify how many times above the Full-Stack included trace volume you want to configure. The chart shows the Full-Stack included limit (`included_limit`; blue line), the predicted configured limit (`predicted_configured_limit`; red line), the trace volume covered by the included limit (`included_ingested_byte_sum`; green bar), and the predicted billable extended ingest (`predicted_billing_amount`; orange bar).\n\nThe current ExtraIngestFactor is $ExtraIngestFactor.",
+      "type": "data",
+      "query": "// 1. Fetch the necessary data\nfetch dt.system.events\n\n// 2. Filter the data out\n| filter event.type == \"Traces - Ingest & Process\"\n| filter licensing_type == \"fullstack-adaptive\" \n\n// 3. Make a timeseries out of the remaining data\n| makeTimeseries {ingested_bytes_sum = sum(ingested_bytes)}, time: usage.start, interval:15m, nonempty:true\n\n// 4. Join a timeseries\n| join [\n  timeseries { \n    included_limit_min = avg(dt.billing.traces.maximum_included_fullstack_volume_per_minute), \n    service_calls_processed = sum(dt.sfm.oneagent.service_calls.processed), \n    service_calls_received = sum(dt.sfm.server.service_calls.received)\n  }, interval:15m, nonempty:true\n  | fieldsAdd intervalInMinutes = toLong(interval) / 60000000000\n  | fieldsAdd captureRate= service_calls_received[]/service_calls_processed[]\n  | fieldsAdd included_limit = included_limit_min[] * intervalInMinutes\n  | fieldsAdd predicted_configured_limit = included_limit_min[] * intervalInMinutes * toDouble($ExtraIngestFactor)\n] , kind:outer, on:{timeframe}, fields: {included_limit,predicted_configured_limit,captureRate}\n\n// 5. Add computed fields to the joined timeseries\n| fieldsAdd maximum_potential_ingestable_trace_data = ingested_bytes_sum[] / captureRate[]\n| fieldsAdd min_overage = ingested_bytes_sum[] - included_limit[]\n| fieldsAdd min_overage = if(min_overage[] > 0, min_overage[], else: 0)\n| fieldsAdd extra_ingest_volume = predicted_configured_limit[] - included_limit[]\n| fieldsAdd predicted_billing_amount = maximum_potential_ingestable_trace_data[] - included_limit[]\n| fieldsAdd predicted_billing_amount = if(predicted_billing_amount[] > 0, predicted_billing_amount[], else: 0)\n| fieldsAdd predicted_billing_amount = if(predicted_billing_amount[] > extra_ingest_volume[], extra_ingest_volume[], else: predicted_billing_amount[])\n| fieldsAdd predicted_billing_amount = if (min_overage[] > predicted_billing_amount[], min_overage[], else: predicted_billing_amount[])\n| fieldsAdd predicted_billing_amount = if(toDouble($ExtraIngestFactor) > 1.0, predicted_billing_amount[], else: 0)\n| fieldsAdd included_ingested_byte_sum = if (predicted_billing_amount[] > 0,included_limit[], else: ingested_bytes_sum[])\n| fieldsAdd predicted_capture_rate = if(((included_ingested_byte_sum[]+predicted_billing_amount[])/maximum_potential_ingestable_trace_data[]*100)<100,\n                                         (included_ingested_byte_sum[]+predicted_billing_amount[])/maximum_potential_ingestable_trace_data[]*100,else:100)\n| fields predicted_configured_limit, included_limit, included_ingested_byte_sum, predicted_capture_rate, predicted_billing_amount, timeframe, interval",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "truncationMode": "middle",
+          "legend": {
+            "hidden": true
+          },
+          "leftYAxisSettings": {
+            "label": "(DPS) Maximum included Full-Stack trace volume • (DPS) Maximum configured Full-Stack trace volume",
+            "min": {
+              "mode": "custom",
+              "value": 0
+            }
+          },
+          "xAxisLabel": "timeframe",
+          "xAxisScaling": "analyzedTimeframe",
+          "tooltip": {
+            "variant": "shared"
+          },
+          "seriesOverrides": [
+            {
+              "seriesId": [
+                "included_limit"
+              ],
+              "override": {
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-01-default, #134fc9)"
+                }
+              }
+            },
+            {
+              "seriesId": [
+                "predicted_capture_rate"
+              ],
+              "override": {
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-11-default, #627cfe)"
+                }
+              }
+            },
+            {
+              "seriesId": [
+                "included_ingested_byte_sum"
+              ],
+              "override": {
+                "geometry": "bar",
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-09-default, #649438)"
+                }
+              }
+            },
+            {
+              "seriesId": [
+                "predicted_billing_amount"
+              ],
+              "override": {
+                "geometry": "bar",
+                "color": {
+                  "Default": "var(--dt-colors-charts-categorical-color-14-default, #d56b1a)"
+                }
+              }
+            },
+            {
+              "seriesId": [
+                "predicted_configured_limit"
+              ],
+              "override": {
+                "color": {
+                  "Default": "var(--dt-colors-charts-loglevel-emergency-default, #ae132d)"
+                }
+              }
+            }
+          ],
+          "fieldMapping": {
+            "leftAxisValues": [
+              "predicted_configured_limit",
+              "included_limit",
+              "included_ingested_byte_sum",
+              "predicted_capture_rate",
+              "predicted_billing_amount"
+            ],
+            "timestamp": "timeframe"
+          },
+          "pointsDisplay": "never"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [],
+        "unitsOverrides": [
+          {
+            "identifier": "predicted_capture_rate",
+            "unitCategory": "percentage",
+            "baseUnit": "percent",
+            "displayUnit": null,
+            "decimals": 1,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1737467085192
+          },
+          {
+            "identifier": "included_limit",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "gibibyte",
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1737467092196
+          },
+          {
+            "identifier": "predicted_configured_limit",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "gibibyte",
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1737467095571
+          },
+          {
+            "identifier": "predicted_billing_amount",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "gibibyte",
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1737467101279
+          },
+          {
+            "identifier": "included_ingested_byte_sum",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "gibibyte",
+            "decimals": 2,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1737702822883
+          }
+        ],
+        "dataMapping": {
+          "displayedFields": [
+            "predicted_configured_limit",
+            "included_limit",
+            "included_ingested_byte_sum",
+            "predicted_capture_rate"
+          ]
+        }
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "29": {
+      "title": "Predicted extended ingest billable amount",
+      "description": "Total predicted Extended trace ingest that will be billed for the selected timeframe, based on the configured `ExtraIngestFactor`.",
+      "type": "data",
+      "query": "// 1. Fetch the necessary data\nfetch dt.system.events\n\n// 2. Filter the data out\n| filter event.type == \"Traces - Ingest & Process\"\n| filter licensing_type == \"fullstack-adaptive\" \n\n// 3. Make a timeseries out of the remaining data\n| makeTimeseries {ingested_bytes_sum = sum(ingested_bytes)}, time: usage.start, interval:15m, nonempty:true\n\n// 4. Join a timeseries\n| join [\n  timeseries {\n    included_limit_min = avg(dt.billing.traces.maximum_included_fullstack_volume_per_minute),\n    service_calls_processed = sum(dt.sfm.oneagent.service_calls.processed), \n    service_calls_received=sum(dt.sfm.server.service_calls.received)\n  } ,interval:15m, nonempty:true\n  | fieldsAdd intervalInMinutes = toLong(interval) / 60000000000\n  | fieldsAdd captureRate= service_calls_received[]/service_calls_processed[]\n  | fieldsAdd included_limit = included_limit_min[] * intervalInMinutes\n  | fieldsAdd predicted_configured_limit = included_limit_min[] * intervalInMinutes * toDouble($ExtraIngestFactor)\n] , kind:outer, on:{timeframe}, fields: {included_limit,predicted_configured_limit,captureRate}\n\n// 5. Add computed fields to the joined timeseries\n| fieldsAdd maximum_potential_ingestable_trace_data = ingested_bytes_sum[] / captureRate[]\n| fieldsAdd min_overage = ingested_bytes_sum[] - included_limit[]\n| fieldsAdd min_overage = if(min_overage[] > 0, min_overage[], else: 0)\n| fieldsAdd extra_ingest_volume = predicted_configured_limit[] - included_limit[]\n| fieldsAdd predicted_billing_amount = maximum_potential_ingestable_trace_data[] - included_limit[]\n| fieldsAdd predicted_billing_amount = if(predicted_billing_amount[] > 0, predicted_billing_amount[], else: 0)\n| fieldsAdd predicted_billing_amount = if(predicted_billing_amount[] > extra_ingest_volume[], extra_ingest_volume[], else: predicted_billing_amount[])\n| fieldsAdd predicted_billing_amount = if (min_overage[] > predicted_billing_amount[], min_overage[], else: predicted_billing_amount[])\n| fieldsAdd predicted_billing_amount = if(toDouble($ExtraIngestFactor) > 1.0, predicted_billing_amount[], else: 0)\n\n// 6. Add a \"prediction\" field\n| summarize predict=sum(arraySum(predicted_billing_amount))\n| fieldsAdd predict=if (toDouble($ExtraIngestFactor) > 1, predict, else: 0)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "labelMode": "none",
+          "label": "Predicted extra ingest billable amount",
+          "recordField": "predict",
+          "prefixIcon": "",
+          "trend": {
+            "isVisible": true
+          }
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [],
+        "unitsOverrides": [
+          {
+            "identifier": "predict",
+            "unitCategory": "data",
+            "baseUnit": "byte",
+            "displayUnit": "gibibyte",
+            "decimals": 0,
+            "suffix": "",
+            "delimiter": false,
+            "added": 1737468810430
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": {
+          "isAvailable": true
+        }
+      }
+    },
+    "30": {
+      "type": "markdown",
+      "content": "### Full-Stack Adaptive Traffic Management and trace capture\nThe Full-Stack included trace volume scales with host or application memory. [Adaptive Traffic Management](https://docs.dynatrace.com/docs/shortlink/adaptive-traffic-management-saas-dps) intelligently samples traces in Full-Stack Monitoring. OneAgent adjusts sampling to keep ingested volume within your total trace volume.\n\nUse trace ingest control and sampling settings to prioritize critical requests (eg. HTTP/RPC) and allocate volume between Adaptive Traffic Management and fixed-rate spans.\n\nIf you need more trace data, please request extended trace ingest for Full-Stack Monitoring. Learn more in the [licensing documentation](https://docs.dynatrace.com/docs/shortlink/dps-full-stack#full-stack-traces)."
+    }
+  },
+  "layouts": {
+    "0": {
+      "x": 0,
+      "y": 3,
+      "w": 3,
+      "h": 3
+    },
+    "1": {
+      "x": 0,
+      "y": 6,
+      "w": 3,
+      "h": 3
+    },
+    "2": {
+      "x": 3,
+      "y": 3,
+      "w": 21,
+      "h": 6
+    },
+    "3": {
+      "x": 0,
+      "y": 9,
+      "w": 12,
+      "h": 6
+    },
+    "4": {
+      "x": 0,
+      "y": 27,
+      "w": 24,
+      "h": 6
+    },
+    "10": {
+      "x": 0,
+      "y": 15,
+      "w": 12,
+      "h": 6
+    },
+    "11": {
+      "x": 12,
+      "y": 15,
+      "w": 12,
+      "h": 6
+    },
+    "12": {
+      "x": 12,
+      "y": 9,
+      "w": 12,
+      "h": 6
+    },
+    "17": {
+      "x": 0,
+      "y": 21,
+      "w": 12,
+      "h": 6
+    },
+    "18": {
+      "x": 12,
+      "y": 21,
+      "w": 12,
+      "h": 6
+    },
+    "21": {
+      "x": 0,
+      "y": 34,
+      "w": 12,
+      "h": 6
+    },
+    "26": {
+      "x": 19,
+      "y": 40,
+      "w": 2,
+      "h": 3
+    },
+    "27": {
+      "x": 0,
+      "y": 33,
+      "w": 24,
+      "h": 1
+    },
+    "28": {
+      "x": 12,
+      "y": 34,
+      "w": 12,
+      "h": 6
+    },
+    "29": {
+      "x": 21,
+      "y": 40,
+      "w": 3,
+      "h": 3
+    },
+    "30": {
+      "x": 0,
+      "y": 0,
+      "w": 24,
+      "h": 3
+    }
+  },
+  "importedWithCode": false,
+  "settings": {
+    "defaultTimeframe": {
+      "value": {
+        "from": "now()-7d",
+        "to": "now()"
+      },
+      "enabled": true
+    }
+  },
+  "annotations": []
+}
