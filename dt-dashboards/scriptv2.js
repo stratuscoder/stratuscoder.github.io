@@ -1,4 +1,4 @@
-function popluateCards() {
+function populateCards() {
     const container = document.getElementById('cards-container');
 
     let cardSections = ``;
