@@ -45,7 +45,7 @@ function popluateCards() {
                   ${cardSections}
               </div>
             
-              <!-- `display: none` can cause SVG filters to be ineffective in Firefox. -->
+              <!-- "display: none" can cause SVG filters to be ineffective in Firefox. -->
               <svg width="0" height="0" style="visibility: hidden; position: fixed;">
                 <filter id="svg-inset-shadow">
                   <feOffset in="SourceAlpha" dx="6" dy="8" />
