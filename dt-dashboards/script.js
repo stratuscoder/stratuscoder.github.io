@@ -1,26 +1,54 @@
 // 1. JavaScript JSON variable containing the items
 const cardData = [
     {
-        image: 'https://picsum.photos',
-        title: 'Card Title 1',
-        description: 'A brief description for card number one.',
-        linkUrl: '#link1',
-        linkText: 'Learn More'
+        image: './dashboards/fsadaptivetrafficmgmt.png',
+        title: 'Full Stack Adaptive Traffic Management',
+        description: 'Shows Full Stack adaptive traffic management.',
+        linkUrl: './dashboards/fsadaptivetrafficmgmt.json',
+        linkText: 'Download Dashboard'
     },
     {
-        image: 'https://picsum.photos',
-        title: 'Card Title 2',
-        description: 'Details for the second card in the grid.',
-        linkUrl: '#link2',
-        linkText: 'Read More'
+        image: './dashboards/fsadaptivetrafficmgmt.png',
+        title: 'Full Stack Adaptive Traffic Management',
+        description: 'Shows Full Stack adaptive traffic management.',
+        linkUrl: './dashboards/fsadaptivetrafficmgmt.json',
+        linkText: 'Download Dashboard'
     },
     {
-        image: 'https://picsum.photos',
-        title: 'Card Title 3',
-        description: 'More information about the third card.',
-        linkUrl: '#link3',
-        linkText: 'View Details'
+        image: './dashboards/fsadaptivetrafficmgmt.png',
+        title: 'Full Stack Adaptive Traffic Management',
+        description: 'Shows Full Stack adaptive traffic management.',
+        linkUrl: './dashboards/fsadaptivetrafficmgmt.json',
+        linkText: 'Download Dashboard'
     },
+    {
+        image: './dashboards/fsadaptivetrafficmgmt.png',
+        title: 'Full Stack Adaptive Traffic Management',
+        description: 'Shows Full Stack adaptive traffic management.',
+        linkUrl: './dashboards/fsadaptivetrafficmgmt.json',
+        linkText: 'Download Dashboard'
+    },
+    {
+        image: './dashboards/fsadaptivetrafficmgmt.png',
+        title: 'Full Stack Adaptive Traffic Management',
+        description: 'Shows Full Stack adaptive traffic management.',
+        linkUrl: './dashboards/fsadaptivetrafficmgmt.json',
+        linkText: 'Download Dashboard'
+    },
+    {
+        image: './dashboards/fsadaptivetrafficmgmt.png',
+        title: 'Full Stack Adaptive Traffic Management',
+        description: 'Shows Full Stack adaptive traffic management.',
+        linkUrl: './dashboards/fsadaptivetrafficmgmt.json',
+        linkText: 'Download Dashboard'
+    },
+    {
+        image: './dashboards/fsadaptivetrafficmgmt.png',
+        title: 'Full Stack Adaptive Traffic Management',
+        description: 'Shows Full Stack adaptive traffic management.',
+        linkUrl: './dashboards/fsadaptivetrafficmgmt.json',
+        linkText: 'Download Dashboard'
+    }
     // Add more items as needed
 ];
 
