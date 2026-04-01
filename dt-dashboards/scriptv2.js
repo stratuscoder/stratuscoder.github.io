@@ -25,7 +25,7 @@ function populateCards() {
                   <p class="_description | -line-clamp">${cardItem.description}</p>
                   <ul class="_tag-list | cluster" style="--cluster--gap: 0.5rem;">${tags}</ul>
                   <div class="_button" style="--purchase-button--background: var(--_accent); --purchase-button--foreground: var(--_accent-contrast);">
-                    <a onclick="downloadJsonFromUrl(${cardItem.linkUrl},${cardItem.fileName})" class="scope purchase-button">Download Dashboard</a>                    
+                    <a onclick="downloadJsonFromUrl('${cardItem.linkUrl}','${cardItem.fileName}')" href="" class="scope purchase-button">Download Dashboard</a>                    
                   </div>
                 </section>
         `;
