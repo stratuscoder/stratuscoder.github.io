@@ -10,7 +10,7 @@ function popluateCards() {
         const cardTags = cardItem.tags;
         cardTags.forEach(cardTag => {
             tags += `<li class="_tag | -trim-both">${cardTag}</li>`;
-        )};
+        });
         
         const cardSection = `
                 <section class="_card">
