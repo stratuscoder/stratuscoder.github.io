@@ -21,7 +21,7 @@ function populateCards() {
                     <img src="${cardItem.image}" alt="" width="400" height="210" fetchpriority="high" />
                   </div>
                   <p class="_category | -trim-both">${cardItem.category}</p>
-                  <p class="_price | -trim-both">&yen;2,000</p>
+                  <!-- <p class="_price | -trim-both">&yen;2,000</p> -->
                   <p class="_description | -line-clamp">${cardItem.description}</p>
                   <ul class="_tag-list | cluster" style="--cluster--gap: 0.5rem;">${tags}</ul>
                   <div class="_button" style="--purchase-button--background: var(--_accent); --purchase-button--foreground: var(--_accent-contrast);">
