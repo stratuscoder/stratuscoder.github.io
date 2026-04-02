@@ -14,10 +14,9 @@ function populateCards() {
         
         const cardSection = `
                 <section class="_card">
-
                   <div>
                     <div class="_button" style="float:right; width:10% --purchase-button--background: var(--_accent); --purchase-button--foreground: var(--_accent-contrast);">
-                        <a href="javascript:downloadJsonFromUrl('${cardItem.linkUrl}','${cardItem.fileName}')">
+                        <a href="javascript:downloadJsonFromUrl('${cardItem.linkUrl}','${cardItem.fileName}')"  style="--purchase-button--background: var(--_accent); --purchase-button--foreground: var(--_accent-contrast);">
                         <i class="fa-solid fa-download scope purchase-button"></i></a>
                     </div>
                     <h2 class="_heading | -fluid-text -trim-both" style="--fluid-text--min-font-size: 16;--fluid-text--max-font-size: 18;float:left; width:75%">${cardItem.title}</h2>
@@ -30,10 +29,6 @@ function populateCards() {
                   <!-- <p class="_price | -trim-both">&yen;2,000</p> -->
                   <p class="_description | -line-clamp">${cardItem.description}</p>
                   <ul class="_tag-list | cluster" style="--cluster--gap: 0.5rem;">${tags}</ul>
-                  <div class="_button" style="--purchase-button--background: var(--_accent); --purchase-button--foreground: var(--_accent-contrast);">
-                    <button onclick="downloadJsonFromUrl('${cardItem.linkUrl}','${cardItem.fileName}')" class="scope purchase-button">Download Dashboard JSON</button>
-                    <!-- <a href="" class="scope purchase-button">Download Dashboard</a> -->
-                  </div>
                 </section>
         `;
         
