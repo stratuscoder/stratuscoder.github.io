@@ -14,8 +14,14 @@ function populateCards() {
         
         const cardSection = `
                 <section class="_card">
-                  <h2 class="_heading | -fluid-text -trim-both" style="--fluid-text--min-font-size: 16;
-                  --fluid-text--max-font-size: 18;">${cardItem.title}</h2>
+
+                  <div>
+                    <div class="_button" style="float:right; width:10% --purchase-button--background: var(--_accent); --purchase-button--foreground: var(--_accent-contrast);">
+                        <a href="javascript:downloadJsonFromUrl('${cardItem.linkUrl}','${cardItem.fileName}')">
+                        <i class="fa-solid fa-download scope purchase-button"></i></a>
+                    </div>
+                    <h2 class="_heading | -fluid-text -trim-both" style="--fluid-text--min-font-size: 16;--fluid-text--max-font-size: 18;float:left; width:75%">${cardItem.title}</h2>
+                  </div>
                   <div class="_thumbnail-stack">
                     <img src="${cardItem.image}" alt="" width="400" height="210" fetchpriority="high" />
                     <img src="${cardItem.image}" alt="" width="400" height="210" fetchpriority="high" />
