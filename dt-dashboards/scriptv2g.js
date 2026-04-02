@@ -15,7 +15,7 @@ function populateCards() {
         const cardSection = `
                 <section class="_card">
                   <h2 class="_heading | -fluid-text -trim-both" style="--fluid-text--min-font-size: 16;
-                  --fluid-text--max-font-size: 24;">${cardItem.title}</h2>
+                  --fluid-text--max-font-size: 18;">${cardItem.title}</h2>
                   <div class="_thumbnail-stack">
                     <img src="${cardItem.image}" alt="" width="400" height="210" fetchpriority="high" />
                     <img src="${cardItem.image}" alt="" width="400" height="210" fetchpriority="high" />
@@ -42,7 +42,7 @@ function populateCards() {
                   --grid--row-gap: var(--product-cards--gap, 1.5rem);
                   --grid--column-gap: var(--product-cards--gap, 1.5rem);
                   --grid--column-max-count: var(--product-cards--column-max-count, 4);
-                  --grid--column-min-width: var(--product-cards--column-min-width, 20rem);">
+                  --grid--column-min-width: var(--product-cards--column-min-width, 10rem);">
                   ${cardSections}
               </div>
             
