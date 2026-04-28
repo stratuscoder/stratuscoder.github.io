@@ -59,53 +59,135 @@
             {
                 "step": 1,
                 "image": "./screens/01.png",
-                "caption": "Step 1: Download the MCP Workshop Installer from the official website."
+                "width": 400,
+                "caption": "Download the MCP Workshop Installer from the official website."
             },
             {
                 "step": 2,
                 "image": "./screens/02.png",
-                "caption": "Step 2: Run the installer and follow the on-screen instructions to set up the workshop environment."
+                "width": 400,
+                "caption": "Run the installer and follow the on-screen instructions to set up the workshop environment."
             },
             {
                 "step": 3,
                 "image": "./screens/03.png",
-                "caption": "Step 3: Once installation is complete, launch the MCP Workshop application."
+                "width": 800,
+                "caption": "Once installation is complete, launch the MCP Workshop application."
             },
             {
                 "step": 4,
                 "image": "./screens/04.png",
-                "caption": "Step 4: Create a new project by selecting 'New Project' from the main menu."
+                "width": 800,
+                "caption": "Create a new project by selecting 'New Project' from the main menu."
             },
             {
                 "step": 5,
                 "image": "./screens/05.png",
-                "caption": "Step 5: Configure your project settings, including project name and location."
+                "width": 400,
+                "caption": "Configure your project settings, including project name and location."
             },
             {
                 "step": 6,
                 "image": "./screens/06.png",
-                "caption": "Step 6: Import your assets into the project by dragging and dropping them into the asset library."
+                "width": 400,
+                "caption": "Import your assets into the project by dragging and dropping them into the asset library."
             },
             {
                 "step": 7,
                 "image": "./screens/07.png",
-                "caption": "Step 7: Use the timeline to arrange your assets and create your desired sequence."
+                "width": 400,
+                "caption": "Use the timeline to arrange your assets and create your desired sequence."
             },
             {
                 "step": 8,
                 "image": "./screens/08.png",
-                "caption": "Step 8: Preview your project using the built-in preview feature to ensure everything looks correct."
+                "width": 800,
+                "caption": "Preview your project using the built-in preview feature to ensure everything looks correct."
             },
             {
                 "step": 9,
                 "image": "./screens/09.png",
-                "caption": "Step 9: Export your final project in your preferred format for sharing or further editing."
+                "width": 800,
+                "caption": "Export your final project in your preferred format for sharing or further editing."
             },
             {
                 "step": 10,
                 "image": "./screens/10.png",
-                "caption": "Step 10: Congratulations! You've successfully set up and completed your MCP Workshop project."
-            }
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 11,
+                "image": "./screens/11.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 12,
+                "image": "./screens/12.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 13,
+                "image": "./screens/13.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 14,
+                "image": "./screens/14.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 15,
+                "image": "./screens/15.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 16,
+                "image": "./screens/16.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 17,
+                "image": "./screens/17.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 18,
+                "image": "./screens/18.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 19,
+                "image": "./screens/19.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 20,
+                "image": "./screens/20.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 21,
+                "image": "./screens/21.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 22,
+                "image": "./screens/22.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
         ];
         return data;
     }
@@ -119,25 +201,25 @@
         const steps = document.getElementById("steps");
         steps.innerHTML = "";
 
-        for (let i = 1; i <= max; i++) {
+        for (let i = 0; i <= max+1; i++) {
             //const width = getRandomNumber(180, 520);
             //const height = getRandomNumber(140, 420);
             //const seed = Math.floor(Math.random() * 100000);
 
             const step = document.createElement("p");
-            step.textContent = data[i].caption;
+            step.textContent = `Step ${i}: ${data[i].caption}`;
             const card = document.createElement("div");
             card.className = "image-card";
 
             const image = document.createElement("img");
             image.src = `${data[i].image}`;
-            //image.width = width;
+            image.width = `${data[i].width}`;
             //image.height = height;
             image.alt = `${data[i].image}`;
 
             const caption = document.createElement("div");
             caption.className = "caption";
-            caption.textContent = `${data[i].caption}`;
+            caption.textContent = `Step ${i}: ${data[i].caption}`;
 
             card.appendChild(image);
             card.appendChild(caption);
