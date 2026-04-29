@@ -99,11 +99,12 @@
             "maxHeight": 420
         };
     }
-    async function copytoClipboard() {
+    async function copytoClipboard(copyText) {
         try {
             const config = getConfig();
-            await navigator.clipboard.writeText(config.github);
-            alert("Copied to clipboard: " + config.github);
+            //await navigator.clipboard.writeText(config.github);
+            await navigator.clipboard.writeText(copyText);
+            //alert("Copied to clipboard: " + config.github);
         } catch (err) {
             console.error("Failed to copy: ", err);
         }
@@ -117,128 +118,190 @@
             {
                 "step": 1,
                 "image": "./screens/01.png",
-                "width": 400,
-                "caption":"Launch VSCode and click on File ... New Window from the menu."
+                "width": 600,
+                "caption":"Launch VSCode and click on File ... New Window from the menu.",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":
             },
             {
                 "step": 2,
                 "image": "./screens/02.png",
-                "width": 400,
-                "caption": "Click on one of the Clone Repository buttons"
+                "width": 600,
+                "caption": "Click on one of the Clone Repository buttons",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":""
             },
             {
                 "step": 3,
                 "image": "./screens/03.png",
-                "width": 400,
-                "caption": "Paste the previously copied github URL into the selector and press enter."
+                "width": 600,
+                "caption": "Click on the Copy button, then paste the copied github URL into the selector and press enter.",
+                "buttonLabel":"Copy Github URL",
+                "buttonAction": "copytoClipboard",
+                "buttonData":"https://github.com/dynatrace-oss/dt-mcp-playground"
             },
             {
                 "step": 4,
                 "image": "./screens/04.png",
                 "width": 600,
-                "caption": "Select a folder to be used to clone the repository into."
+                "caption": "Select a folder to be used to clone the repository into.",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":""
             },
             {
                 "step": 5,
                 "image": "./screens/05.png",
                 "width": 600,
-                "caption":"Click on Select a Repository Destination."
+                "caption":"Click on Select a Repository Destination.",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":""
             },
                         {
                 "step": 6,
                 "image": "./screens/06.png",
                 "width": 400,
-                "caption": "Click Open in the popup to open the cloned repository in a new VSCode window."
+                "caption": "Click Open in the popup to open the cloned repository in a new VSCode window.",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":""
             },
             {
                 "step": 7,
                 "image": "./screens/07.png",
                 "width": 400,
-                "caption": "Once cloned you should see the project files like the image below."
+                "caption": "Once cloned you should see the project files like the image below.",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":""
             },
 {
                 "step": 8,
                 "image": "./screens/08.png",
                 "width": 600,
-                "caption": "Click on extensions and filer for Github Copilot Chat, if there is an install button click it."
+                "caption": "Click on extensions and filer for Github Copilot Chat, if there is an install button click it.",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":""
             },
             {
                 "step": 9,
                 "image": "./screens/09.png",
                 "width": 600,
-                "caption": "Once it is installed it should look like the image below."
+                "caption": "Once it is installed it should look like the image below.",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":""
             },
             {
                 "step": 10,
                 "image": "./screens/10.png",
                 "width": 600,
-                "caption": "Click on the command filter at the top of the screen and search for '>settings', click on Preferencses: Open Workspace Settings (JSON)"
+                "caption": "Locate the command filter at the top of the screen and click on the copy button below, then paste the copied text into the input field.<br>Click on Preferencses: Open Workspace Settings (JSON)",
+                "buttonLabel":"Copy search command",
+                "buttonAction": "copytoClipboard",
+                "buttonData":">preferences: open workspace settings (JSON)"
             },
             {
                 "step": 11,
                 "image": "./screens/11.png",
-                "width": 400,
-                "caption": 'Replace the JSON with { "chat.mcp.enabled": true} and save the file.'
+                "width": 800,
+                "caption": 'Click on the copy button, then replace the entire JSON file content with the copied data and save the file.',
+                "buttonLabel":"Copy JSON data",
+                "buttonAction": "copytoClipboard",
+                "buttonData":'{ "chat.mcp.enabled": true }'
             },
             {
                 "step": 12,
                 "image": "./screens/12.png",
-                "width": 600,
-                "caption": "Click on the .vscode \ mcp.json file to view it."
+                "width": 800,
+                "caption": "Click on the mcp.json file, located under the .vscode folder to open the file.",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":""
             },
             {
                 "step": 13,
                 "image": "./screens/13.png",
                 "width": 400,
-                "caption": "Review contents of the file. Do not edit the file, but locate the Start section and click on it."
+                "caption": "Click on the copy button for the tenant URL, now Review contents of the mcp.json file. Do not edit the file.<br>Between lines 3 and 4 locate the Start section and click on it.",
+                "buttonLabel":"Copy Tenant URL",
+                "buttonAction": "copytoClipboard",
+                "buttonData":"https://playground.apps.dynatrace.com"
             },
             {
                 "step": 14,
                 "image": "./screens/14.png",
                 "width": 600,
-                "caption": "Once clicked it may prompt you for the Dynatrace tenant to connect too. If so copy and paste following: https://playground.apps.dynatrace.com and press enter button to connect."
+                "caption": "Once Start was clicked it may prompt you for the Dynatrace tenant to connect too. Use the previously copied tenant URL or use the following: https://playground.apps.dynatrace.com and press enter button to connect.",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":""
             },
             {
                 "step": 15,
                 "image": "./screens/15.png",
-                "width": 400,
-                "caption": "This will attempt to connect to the Dynatrace tenant and authenticate your user account. Another window may popup for authentication purposes. If successful you will see the status change from Start to Running in the mcp.json file."
+                "width": 600,
+                "caption": "This will attempt to connect to the Dynatrace tenant and authenticate your user account. Another window may popup for authentication purposes. If successful you will see the status change from Start to Running in the mcp.json file.",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":""
             },
             {
                 "step": 16,
                 "image": "./screens/16.png",
-                "width": 400,
-                 "caption": "Click on the command filter at the top of the screen and search for '>open chat', click on Chat: Open Chat (Agent)"
+                "width": 600,
+                 "caption": "Click on the copy button, then click in the command filter at the top of the screen and paste the copied data into the prompt.<br>Click on the Chat: Open Chat (Agent) option to open the MCP chat agent.",
+                "buttonLabel":"Copy search command",
+                "buttonAction": "copytoClipboard",
+                "buttonData":">chat: open chat (agent)"
             },
             {
                 "step": 17,
                 "image": "./screens/17.png",
                 "width": 400,
-                "caption": "When the chat prompt opens, it is usually on the right side of the IDE, review the options for models. Models can be adjusted to retrieve/act with different results."
+                "caption": "When the chat prompt opens, it is usually on the right side of the IDE, review the options for models. <br>Models can be adjusted to retrieve/act with different results. MCP connection may take a few minutes, if it takes to long (3 minutes or more), click on skip and try to reauthenticate the MCP connection by clicking on restart in the mcp.json file again.",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":""
             },
             {
                 "step": 18,
                 "image": "./screens/18.png",
                 "width": 400,
-                "caption": "There are also different ways to interact with the MCP prompt, checkout the agent options."
-            },
+                "caption": "There are also different ways to interact with the MCP prompt, checkout the agent options.",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":"" 
+          },
             {
                 "step": 19,
                 "image": "./screens/19.png",
                 "width": 600,
-                "caption": "Congratulations! You've successfully set up your local MCP Workshop project. Let's try out some prompts"
-            },
+                "caption": "Congratulations! You've successfully set up your local MCP Workshop project. Let's try out some prompts",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":""
             {
                 "step": 20,
                 "image": "./screens/20.png",
                 "width": 400,
-                "caption": "If all went well, you should have received a response with the tenant details from the Dynatrace tenant."
+                "caption": "If all went well, you should have received a response with the tenant details from the Dynatrace tenant.",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":""
             },
             {
                 "step": 21,
                 "image": "./screens/21.png",
-                "width": 400,
-                "caption": "You can now explore other prompts, try some on your own or try some of the prompts built into this project.<br/>Type a / and pick from the list of numbered prompts."
+                "width": 600,
+                "caption": "You can now explore other prompts, try some on your own or try some of the prompts built into this project.<br/>Type a / and pick from the list of numbered prompts.",
+                "buttonLabel":"",
+                "buttonAction": "copytoClipboard",
+                "buttonData":""
             }       
         ];
 
@@ -260,7 +323,7 @@
             //const seed = Math.floor(Math.random() * 100000);
 
             const step = document.createElement("p");
-            step.textContent = `Step ${i+1}: ${data[i].caption}`;
+            step.innerHTML = `Step ${i+1}: ${data[i].caption}`;
             const card = document.createElement("div");
             card.className = "image-card";
 
@@ -269,13 +332,22 @@
             image.width = `${data[i].width}`;
             //image.height = height;
             image.alt = `${data[i].image}`;
+            card.appendChild(image);
 
+            /*
             const caption = document.createElement("div");
             caption.className = "caption";
-            caption.textContent = `Step ${i+1}: ${data[i].caption}`;
-
-            card.appendChild(image);
+            caption.innerHTML = `Step ${i+1}: ${data[i].caption}`;
             card.appendChild(caption);
+            */
+
+            if (data[i].buttonLabel.length > 0 && data[i].buttonAction.length > 0){
+                const button = document.createElement("button");
+                button.textContent = data[i].buttonLabel;
+                button.onclick = function() { copytoClipboard(data[i].buttonData) };
+                card.appendChild(button);
+            }
+
             steps.appendChild(step);
             steps.appendChild(card);
         }
