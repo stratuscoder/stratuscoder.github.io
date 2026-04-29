@@ -94,7 +94,7 @@
         return {
             "tenant": "playground",
             "domain": ".apps.dynatrace.com",
-            "github": "https://github.com/dynatrace-oss/dynatrace-mcp",
+            "github": "https://github.com/dynatrace-oss/dt-mcp-playground",
             "minHeight": 140,
             "maxHeight": 420
         };
@@ -124,163 +124,115 @@
                 "step": 2,
                 "image": "./screens/02.png",
                 "width": 400,
-                "caption": "Click on the Clone Repository button"
+                "caption": "Click on one of the Clone Repository buttons"
             },
             {
                 "step": 3,
                 "image": "./screens/03.png",
-                "width": 800,
-                "caption": "Select a folder to be used to clone the repository into."
+                "width": 400,
+                "caption": "Paste the previously copied github URL into the selector and press enter."
             },
             {
                 "step": 4,
                 "image": "./screens/04.png",
-                "width": 800,
-                "caption":"Click on Select a Repository Destination."
+                "width": 600,
+                "caption": "Select a folder to be used to clone the repository into."
             },
             {
                 "step": 5,
-                "image": "./screens/05.png",
-                "width": 400,
-                "caption": "Click Open in the popup to open the cloned repository in a new VSCode window."
+                "image": "./screens/04.png",
+                "width": 600,
+                "caption":"Click on Select a Repository Destination."
             },
-            {
+                        {
                 "step": 6,
                 "image": "./screens/06.png",
                 "width": 400,
-                "caption": "Once cloned you should see the project files like the image below."
+                "caption": "Click Open in the popup to open the cloned repository in a new VSCode window."
             },
             {
                 "step": 7,
                 "image": "./screens/07.png",
                 "width": 400,
-                "caption": "Need to change this image."
+                "caption": "Once cloned you should see the project files like the image below."
             },
-            {
+{
                 "step": 8,
                 "image": "./screens/08.png",
-                "width": 800,
-                "caption": "Need to change this image."
+                "width": 600,
+                "caption": "Click on extensions and filer for Github Copilot Chat, if there is an install button click it."
             },
             {
                 "step": 9,
                 "image": "./screens/09.png",
-                "width": 800,
-                "caption": "Need to change this image."
+                "width": 600,
+                "caption": "Once it is installed it should look like the image below."
             },
             {
                 "step": 10,
                 "image": "./screens/10.png",
                 "width": 600,
-                "caption": "Click on extensions and filer for Github Copilot Chat, if there is an install button click it."
+                "caption": "Click on the command filter at the top of the screen and search for '>settings', click on Preferencses: Open Workspace Settings (JSON)"
             },
             {
                 "step": 11,
                 "image": "./screens/11.png",
-                "width": 600,
-                "caption": "Once it is installed it should look like the image below."
+                "width": 400,
+                "caption": 'Replace the JSON with { "chat.mcp.enabled": true} and save the file.'
             },
             {
                 "step": 12,
                 "image": "./screens/12.png",
                 "width": 600,
-                "caption": "not needed"
+                "caption": "Click on the mcp.json file to view it."
             },
             {
                 "step": 13,
                 "image": "./screens/13.png",
-                "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+                "width": 400,
+                "caption": "Review contents of the file. Do not edit the file, but locate the Start section and click on it."
             },
             {
                 "step": 14,
                 "image": "./screens/14.png",
                 "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+                "caption": "Once clicked it may prompt you for the Dynatrace tenant to connect too. If so copy and paste following: https://playground.apps.dynatrace.com and click connect."
             },
             {
                 "step": 15,
                 "image": "./screens/15.png",
-                "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+                "width": 400,
+                "caption": "This will attempt to connect to the Dynatrace tenant and authenticate your user account. Another window may popup for authentication purposes. If successful you will see the status change from Start to Running in the mcp.json file."
             },
             {
                 "step": 16,
                 "image": "./screens/16.png",
-                "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+                "width": 400,
+                 "caption": "Click on the command filter at the top of the screen and search for '>open chat', click on Chat: Open Chat (Agent)"
             },
             {
                 "step": 17,
                 "image": "./screens/17.png",
-                "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+                "width": 400,
+                "caption": "When the chat prompt opens, it is usually on the right side of the IDE, review the options for models. Models can be adjusted to retrieve/act with different results."
             },
             {
                 "step": 18,
                 "image": "./screens/18.png",
-                "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+                "width": 400,
+                "caption": "There are also different ways to interact with the MCP prompt, checkout the agent options."
             },
             {
                 "step": 19,
                 "image": "./screens/19.png",
                 "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+                "caption": "Congratulations! You've successfully set up your local MCP Workshop project. Let's try out some prompts"
             },
             {
                 "step": 20,
                 "image": "./screens/20.png",
-                "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
-            },
-            {
-                "step": 21,
-                "image": "./screens/21.png",
-                "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
-            },
-            {
-                "step": 22,
-                "image": "./screens/22.png",
-                "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
-            },
-            {
-                "step": 23,
-                "image": "./screens/23.png",
-                "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
-            },
-            {
-                "step": 24,
-                "image": "./screens/24.png",
-                "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
-            },
-            {
-                "step": 25,
-                "image": "./screens/25.png",
-                "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
-            },
-            {
-                "step": 26,
-                "image": "./screens/26.png",
-                "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
-            },
-            {
-                "step": 27,
-                "image": "./screens/27.png",
-                "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
-            },
-            {
-                "step": 28,
-                "image": "./screens/28.png",
-                "width": 600,
-                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+                "width": 400,
+                "caption": "If all went well, you should have received a response with the tenant details from the Dynatrace tenant."
             },
         ];
 
