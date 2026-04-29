@@ -15,6 +15,10 @@
   h1 {
     margin-bottom: 8px;
   }
+  button {
+    margin-bottom: 10px;
+  }
+
   .instructions {
     max-width: 850px;
     line-height: 1.6;
@@ -50,61 +54,32 @@
 </head>
 <body>
     <h1>MCP Workshop Setup</h1>
-    <h4>Step By Step Guide</h4>
-    <p class="instructions">
-        Pre-reqs: 
-        <ul>
-            <li>Node.JS must be installed</li>
-            <li>VSCode must be installed</li>
-            <li>Ability to add extensions in VSCode may be required</li>
-            <li>Follow each step in order</li>
-        </ul>
-        Please click the "Start" button to begin.
-    </p>
-    <button onclick="copytoClipboard()">Start</button>
+    <h3>Step By Step Guide</h3>
+    <h4>Pre-reqs:</h4>
+    <ul>
+        <li>VSCode must be installed for the entire workshop.</li>
+        <li>Node.JS must be installed to Start/Run the local MCP Server.</li>
+        <li>Github Copilot Chat extension in VSCode will be required for interaction with the AI features.</li>
+        <li>A github account is also required,  FYI: A personal gmail account can be used.</li>
+    </ul>
+
     <div id="steps" class="steps">
     </div>
-<!--
-    <p class="instructions">
-  StepInstructions: Review the 10 images below and observe how each image has a different random size.
-  This page can be used to test responsive layouts, image spacing, captions, and how mixed image dimensions
-  appear together in a flexible gallery.
-    </p>
-    <div class="gallery">
-        <div class="image-card">
-            <img src="./screens/01.png" width="" height="" alt="Screen" />
-            <div class="caption"></div>
-        </div>
-    </div>
 
-<p class="instructions">
-  Instructions: Review the 10 images below and observe how each image has a different random size.
-  This page can be used to test responsive layouts, image spacing, captions, and how mixed image dimensions
-  appear together in a flexible gallery.
-    </p>
-    <div class="gallery">
-        <div class="image-card">
-            <img src="./screens/02.png" width="" height="" alt="Screen" />
-            <div class="caption"></div>
-        </div>
-    </div>
--->
 <script>
     function getConfig() {
         return {
-            "tenant": "playground",
-            "domain": ".apps.dynatrace.com",
+            "tenant": "https://playground.apps.dynatrace.com",
             "github": "https://github.com/dynatrace-oss/dt-mcp-playground",
             "minHeight": 140,
             "maxHeight": 420
         };
     }
+
     async function copytoClipboard(copyText) {
         try {
             const config = getConfig();
-            //await navigator.clipboard.writeText(config.github);
             await navigator.clipboard.writeText(copyText);
-            //alert("Copied to clipboard: " + config.github);
         } catch (err) {
             console.error("Failed to copy: ", err);
         }
@@ -140,7 +115,7 @@
                 "caption": "Click on the Copy button, then paste the copied github URL into the selector and press enter.",
                 "buttonLabel":"Copy Github URL",
                 "buttonAction": "copytoClipboard",
-                "buttonData":"https://github.com/dynatrace-oss/dt-mcp-playground"
+                "buttonData": config.github
             },
             {
                 "step": 4,
@@ -230,7 +205,7 @@
                 "caption": "Click on the copy button for the tenant URL, now Review contents of the mcp.json file. Do not edit the file.<br>Between lines 3 and 4 locate the Start section and click on it.",
                 "buttonLabel":"Copy Tenant URL",
                 "buttonAction": "copytoClipboard",
-                "buttonData":"https://playground.apps.dynatrace.com"
+                "buttonData": config.tenant
             },
             {
                 "step": 14,
@@ -281,10 +256,10 @@
                 "step": 19,
                 "image": "./screens/19.png",
                 "width": 600,
-                "caption": "Congratulations! You've successfully set up your local MCP Workshop project. Let's try out some prompts",
-                "buttonLabel":"",
+                "caption": "Congratulations! You've successfully set up your local MCP Workshop project. <br>Click the copy button to try the 1st prompt and see if you can get a response back from the Dynatrace tenant. <br>Type the following prompt into the chat and press enter to send the prompt to the MCP server.<br><br>What Dynatrace environment are we connected to? ",
+                "buttonLabel":"Copy the AI prompt",
                 "buttonAction": "copytoClipboard",
-                "buttonData":""
+                "buttonData":"What Dynatrace environment are we connected to?"
             },
             {
                 "step": 20,
@@ -300,9 +275,9 @@
                 "image": "./screens/21.png",
                 "width": 600,
                 "caption": "You can now explore other prompts, try some on your own or try some of the prompts built into this project.<br/>Type a / and pick from the list of numbered prompts.",
-                "buttonLabel":"",
+                "buttonLabel":"Copy the AI prompt features command",
                 "buttonAction": "copytoClipboard",
-                "buttonData":""
+                "buttonData":"/"
             }       
         ];
 
@@ -324,7 +299,7 @@
             //const seed = Math.floor(Math.random() * 100000);
 
             const step = document.createElement("p");
-            step.innerHTML = `Step ${i+1}: ${data[i].caption}`;
+            step.innerHTML = `<strong>Step ${i+1}:</strong> ${data[i].caption}`;
             const card = document.createElement("div");
             card.className = "image-card";
 
