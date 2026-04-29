@@ -52,15 +52,61 @@
     <h1>MCP Workshop Setup Step By Step</h1>
     <div id="steps" class="steps">
     </div>
+<!--
+    <p class="instructions">
+  StepInstructions: Review the 10 images below and observe how each image has a different random size.
+  This page can be used to test responsive layouts, image spacing, captions, and how mixed image dimensions
+  appear together in a flexible gallery.
+    </p>
+    <div class="gallery">
+        <div class="image-card">
+            <img src="./screens/01.png" width="" height="" alt="Screen" />
+            <div class="caption"></div>
+        </div>
+    </div>
+
+<p class="instructions">
+  Instructions: Review the 10 images below and observe how each image has a different random size.
+  This page can be used to test responsive layouts, image spacing, captions, and how mixed image dimensions
+  appear together in a flexible gallery.
+    </p>
+    <div class="gallery">
+        <div class="image-card">
+            <img src="./screens/02.png" width="" height="" alt="Screen" />
+            <div class="caption"></div>
+        </div>
+    </div>
+-->
 <script>
+    function getConfig() {
+        return {
+            "tenant": "playground",
+            "domain": ".apps.dynatrace.com",
+            "github": "https://github.com/dynatrace-oss/dynatrace-mcp",
+            "minHeight": 140,
+            "maxHeight": 420
+        };
+    }
+    async function copytoClipboard() {
+        try {
+            const config = getConfig();
+            await navigator.clipboard.writeText(config.github);
+            alert("Copied to clipboard: " + config.github);
+        } catch (err) {
+            console.error("Failed to copy: ", err);
+        }
+    }
+
     function getData() {
 
-        const data = [
+        const config = getConfig();
+
+        return [
             {
                 "step": 1,
                 "image": "./screens/01.png",
                 "width": 400,
-                "caption": "Download the MCP Workshop Installer from the official website."
+                "caption":"Clone the MCP Workshop from the official website. (<button onclick=copytoClipboard())>Copy</button>)",
             },
             {
                 "step": 2,
@@ -188,8 +234,44 @@
                 "width": 600,
                 "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
             },
+            {
+                "step": 23,
+                "image": "./screens/23.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 24,
+                "image": "./screens/24.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 25,
+                "image": "./screens/25.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 26,
+                "image": "./screens/26.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 27,
+                "image": "./screens/27.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
+            {
+                "step": 28,
+                "image": "./screens/28.png",
+                "width": 600,
+                "caption": "Congratulations! You've successfully set up and completed your MCP Workshop project."
+            },
         ];
-        return data;
+
     }
     
     function getRandomNumber(min, max) {
@@ -201,7 +283,7 @@
         const steps = document.getElementById("steps");
         steps.innerHTML = "";
 
-        for (let i = 0; i <= max+1; i++) {
+        for (let i = 1; i <= max+1; i++) {
             //const width = getRandomNumber(180, 520);
             //const height = getRandomNumber(140, 420);
             //const seed = Math.floor(Math.random() * 100000);
@@ -228,32 +310,8 @@
         }
     }
 
-    generateSteps(10);
+    generateSteps(28);
 </script>
-<!--
-    <p class="instructions">
-  StepInstructions: Review the 10 images below and observe how each image has a different random size.
-  This page can be used to test responsive layouts, image spacing, captions, and how mixed image dimensions
-  appear together in a flexible gallery.
-    </p>
-    <div class="gallery">
-        <div class="image-card">
-            <img src="./screens/01.png" width="" height="" alt="Screen" />
-            <div class="caption"></div>
-        </div>
-    </div>
 
-<p class="instructions">
-  Instructions: Review the 10 images below and observe how each image has a different random size.
-  This page can be used to test responsive layouts, image spacing, captions, and how mixed image dimensions
-  appear together in a flexible gallery.
-    </p>
-    <div class="gallery">
-        <div class="image-card">
-            <img src="./screens/02.png" width="" height="" alt="Screen" />
-            <div class="caption"></div>
-        </div>
-    </div>
--->
 </body>
 </html
