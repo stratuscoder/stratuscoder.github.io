@@ -346,10 +346,10 @@
                 const button = document.createElement("button");
                 button.textContent = data[i].buttonLabel;
                 button.onclick = function() { copytoClipboard(data[i].buttonData) };
-                card.appendChild(button);
             }
 
             steps.appendChild(step);
+            steps.appendChild(button);
             steps.appendChild(card);
         }
     }
