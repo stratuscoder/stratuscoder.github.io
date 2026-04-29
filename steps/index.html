@@ -49,7 +49,8 @@
 </style>
 </head>
 <body>
-    <h1>MCP Workshop Setup Step By Step</h1>
+    <h1>MCP Workshop Setup</h1>
+    <h4>Step By Step Guide</h4>
     <div id="steps" class="steps">
     </div>
 <!--
@@ -290,7 +291,7 @@
             //const seed = Math.floor(Math.random() * 100000);
 
             const step = document.createElement("p");
-            step.textContent = `Step ${id+1}: ${data[i].caption}`;
+            step.textContent = `Step ${i+1}: ${data[i].caption}`;
             const card = document.createElement("div");
             card.className = "image-card";
 
