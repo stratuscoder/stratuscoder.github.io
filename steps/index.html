@@ -283,13 +283,14 @@
         const steps = document.getElementById("steps");
         steps.innerHTML = "";
 
-        for (let i = 1; i <= max+1; i++) {
+        for (let i = 0; i <= max; i++) {
+            
             //const width = getRandomNumber(180, 520);
             //const height = getRandomNumber(140, 420);
             //const seed = Math.floor(Math.random() * 100000);
 
             const step = document.createElement("p");
-            step.textContent = `Step ${i}: ${data[i].caption}`;
+            step.textContent = `Step ${id+1}: ${data[i].caption}`;
             const card = document.createElement("div");
             card.className = "image-card";
 
@@ -301,7 +302,7 @@
 
             const caption = document.createElement("div");
             caption.className = "caption";
-            caption.textContent = `Step ${i}: ${data[i].caption}`;
+            caption.textContent = `Step ${i+1}: ${data[i].caption}`;
 
             card.appendChild(image);
             card.appendChild(caption);
