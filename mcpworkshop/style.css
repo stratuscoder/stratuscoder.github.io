@@ -94,7 +94,9 @@ button[type="submit"]:hover {
   gap: 20px;
   justify-content: center;
   flex-wrap: wrap;
+  width: 100%;
 }
+
 .card {
   background-color: #fff;
   border-radius: 8px;
