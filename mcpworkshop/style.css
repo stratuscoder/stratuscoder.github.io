@@ -105,6 +105,15 @@ button[type="submit"]:hover {
   width: 300px;
   text-align: center;
 }
+.cardL {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  padding: 20px;
+  width: 600px;
+  text-align: center;
+}
+
 .card h2 {
   margin-top: 10px;
 }
