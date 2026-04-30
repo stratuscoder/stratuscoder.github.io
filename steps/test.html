@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple Vanilla JavaScript SPA</title>
+  <style>
+    /* Base styles for a clean, modern look */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;               /* Use flex layout: nav and content side by side */
+      min-height: 100vh;           /* Full viewport height for body to keep nav extended */
+    }
+    /* Left navigation styles */
+    nav#nav {
+      width: 200px;
+      background-color: #2c3e50;   /* Dark gray/blue background for nav */
+      color: #ecf0f1;
+      display: flex;
+      flex-direction: column;
+    }
+    nav#nav a {
+      color: inherit;
+      text-decoration: none;
+      padding: 15px;
+      transition: background-color 0.3s;
+    }
+    nav#nav a:hover { background-color: #34495e; }
+    nav#nav a.active {
+      background-color: #1abc9c;
+      color: #fff;
+      font-weight: bold;
+    }
+    /* Main content area styles */
+    main#content {
+      flex: 1;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    main#content h2 { margin-top: 0; }
+  </style>
+</head>
+<body>
+  <!-- Navigation menu will be populated by JavaScript using navItems JSON data -->
+  <nav id="nav"></nav>
+
+  <!-- Main content area where the views will be loaded -->
+  <main id="content"></main>
+
+  <script>
+    // JSON data for navigation items (menu structure)
+    const navItems = [
+      { id: "home",      label: "Home" },
+      { id: "dashboard", label: "Dashboard" },
+      { id: "reports",   label: "Reports" },
+      { id: "settings",  label: "Settings" }
+    ];
+
+    // Content for each view, keyed by the view id
+    const viewContent = {
+      home: `
+        <h2>Home</h2>
+        <p>Welcome to the <strong>Home</strong> view. This is the main landing page of the application.</p>
+        <p>Here you might put an overview of content or a welcome message.</p>`,
+      dashboard: `
+        <h2>Dashboard</h2>
+        <p>You are now viewing the <strong>Dashboard</strong>. This area shows an overview of data and key metrics.</p>
+        <p>It might include charts, summaries, or quick-access widgets.</p>`,
+      reports: `
+        <h2>Reports</h2>
+        <p>Welcome to the <strong>Reports</strong> section. Here you can generate and view various reports.</p>
+        <p>Use this area to present report summaries or report generation tools.</p>`,
+      settings: `
+        <h2>Settings</h2>
+        <p>This is the <strong>Settings</strong> view. Adjust your application preferences here.</p>
+        <p>Include forms or options for user settings, profile, configurations, etc.</p>`
+    };
+
+    // Populate the navigation menu using the navItems JSON data
+    const navContainer = document.getElementById("nav");
+    navItems.forEach(item => {
+      const link = document.createElement("a");
+      link.href = "#" + item.id;                // use hash for navigation (SPA routing)
+      link.textContent = item.label;
+      navContainer.appendChild(link);
+    });
+
+    // Function to load a view by id: updates main content and active nav link
+    function loadView(viewId) {
+      const contentArea = document.getElementById("content");
+      // Update the main content area with the view's HTML content (or a fallback message)
+      contentArea.innerHTML = viewContent[viewId] || "<h2>View Not Found</h2><p>The requested view does not exist.</p>";
+      // Update the active link styling
+      document.querySelectorAll("#nav a").forEach(link => {
+        link.classList.toggle("active", link.getAttribute("href") === "#" + viewId);
+      });
+    }
+
+    // Initial load: get view from URL hash (if any) or default to first nav item
+    const defaultView = navItems[0].id;
+    const initialView = window.location.hash.substring(1) || defaultView;
+    loadView(initialView);
+
+    // Listen for hash changes (navigation) to update the view
+    window.addEventListener("hashchange", () => {
+      const newView = window.location.hash.substring(1);
+      loadView(newView);
+    });
+  </script>
+</body>
+</html>
