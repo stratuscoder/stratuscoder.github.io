@@ -1,6 +1,65 @@
 (() => {
     'use strict';
 
+    // ─── Auth ─────────────────────────────────────────────────────────────────
+    const AUTH_SESSION_KEY = 'gallery_auth';
+    const GALLERY_PASSWORD = 'destinflorida';
+
+    function isAuthenticated() {
+        return sessionStorage.getItem(AUTH_SESSION_KEY) === '1';
+    }
+
+    function grantAccess() {
+        sessionStorage.setItem(AUTH_SESSION_KEY, '1');
+        document.documentElement.classList.add('authenticated');
+    }
+
+    function initAuth() {
+        if (isAuthenticated()) return; // inline script already added the class
+
+        const overlay   = document.getElementById('auth-overlay');
+        const form      = document.getElementById('auth-form');
+        const input     = document.getElementById('auth-input');
+        const error     = document.getElementById('auth-error');
+        const toggle    = document.getElementById('auth-toggle');
+        const eyeOn     = toggle.querySelector('.icon-eye');
+        const eyeOff    = toggle.querySelector('.icon-eye-off');
+
+        // Show/hide password toggle
+        toggle.addEventListener('click', () => {
+            const isPassword = input.type === 'password';
+            input.type      = isPassword ? 'text' : 'password';
+            eyeOn.style.display  = isPassword ? 'none'  : '';
+            eyeOff.style.display = isPassword ? ''      : 'none';
+            input.focus();
+        });
+
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            const val = input.value;
+
+            if (val === GALLERY_PASSWORD) {
+                error.textContent = '';
+                // Fade out overlay then grant access
+                overlay.style.transition = 'opacity .3s ease';
+                overlay.style.opacity    = '0';
+                overlay.addEventListener('transitionend', () => {
+                    grantAccess();
+                }, { once: true });
+            } else {
+                error.textContent = 'Incorrect password. Please try again.';
+                input.value = '';
+                input.classList.add('shake');
+                input.addEventListener('animationend', () => {
+                    input.classList.remove('shake');
+                }, { once: true });
+                input.focus();
+            }
+        });
+    }
+
+    initAuth();
+
     // ─── Cookie helpers ───────────────────────────────────────────────────────
     const Cookie = {
         get(name) {
