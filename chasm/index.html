@@ -6,770 +6,774 @@
   <title>Crossing the Chasm — Dynatrace Observability Platform</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      background:#030812;
-      width:100vw; height:100vh;
-      overflow:hidden;
-      font-family:'Inter','Segoe UI',system-ui,sans-serif;
-    }
+    body { background:#030812; width:100vw; height:100vh; overflow:hidden; font-family:'Inter','Segoe UI',system-ui,sans-serif; }
     canvas { display:block; width:100%; height:100%; }
   </style>
 </head>
 <body>
 <canvas id="c"></canvas>
 <script>
-// ══════════════════════════════════════════════════════════════
-//  SETUP
-// ══════════════════════════════════════════════════════════════
-const c  = document.getElementById('c');
-const cx = c.getContext('2d');
-const W  = 1600, H = 900;
-c.width  = W; c.height = H;
-c.style.width  = '100vw';
-c.style.height = '100vh';
+// ══ SETUP ══════════════════════════════════════════════════
+const c=document.getElementById('c'), cx=c.getContext('2d');
+const W=1600, H=900;
+c.width=W; c.height=H;
+c.style.width='100vw'; c.style.height='100vh';
 
-// Dynatrace design tokens
-const DT = {
-  bg:      '#030812',
-  surface: '#070E1C',
-  grid:    '#0C1C30',
-  blue:    '#1496FF',
-  teal:    '#00D1E8',
-  cyan:    '#00FFD1',
-  purple:  '#7B4FFF',
-  green:   '#5EEAA8',
-  red:     '#FF4D2E',
-  gold:    '#FFD700',
-  orange:  '#FF8C42',
-  white:   '#FFFFFF',
-  muted:   '#7A8FA6',
-  dim:     '#192838',
+const DT={
+  bg:'#030812', surface:'#070E1C', grid:'#0C1C30',
+  blue:'#1496FF', teal:'#00D1E8', cyan:'#00FFD1',
+  purple:'#7B4FFF', green:'#5EEAA8', red:'#FF4D2E',
+  gold:'#FFD700', orange:'#FF8C42', white:'#FFFFFF',
+  muted:'#7A8FA6', dim:'#192838',
 };
 
-// Layout
 const ML=75, MR=215, MT=105, MB=88;
 const CX=ML, CY=MT, CW=W-ML-MR, CH=H-MT-MB;
-
-// Chasm X boundaries (fraction of CW)
 const CST=0.297, CEN=0.412;
-const cX1 = CX + CST*CW;
-const cX2 = CX + CEN*CW;
+const cX1=CX+CST*CW, cX2=CX+CEN*CW;
 
-// ══════════════════════════════════════════════════════════════
-//  DATA
-// ══════════════════════════════════════════════════════════════
-const SEGS = [
-  {
-    name:'Innovators', sub:'Technology Enthusiasts', pct:'2.5%',
-    start:0,    end:0.12,  mean:0.060, sigma:0.038, weight:0.52,
-    color:'#9D4EDD',
-    customers:['FinTech R&D','Cloud-Native Startups','Platform Eng. Teams'],
-    dtValue:'Developer Experience APIs',
-  },
-  {
-    name:'Early Adopters', sub:'Visionaries', pct:'13.5%',
-    start:0.12, end:CST,  mean:0.207, sigma:0.058, weight:0.70,
-    color:'#00D1E8',
-    customers:['Digital-First Banks','E-Commerce Leaders','SaaS Pioneers','Gaming Platforms'],
-    dtValue:'Rapid Time-to-Value',
-  },
-  {
-    name:'Early Majority', sub:'Pragmatists', pct:'34%',
-    start:CEN,  end:0.648, mean:0.530, sigma:0.090, weight:1.00,
-    color:'#1496FF',
-    customers:['Global Enterprises','Retail Chains','Healthcare Systems','Telco Providers','Airline Groups'],
-    dtValue:'Full-Stack Observability at Scale',
-  },
-  {
-    name:'Late Majority', sub:'Conservatives', pct:'34%',
-    start:0.648,end:0.862, mean:0.755, sigma:0.078, weight:0.92,
-    color:'#0A72D4',
-    customers:['Government Agencies','Traditional Banks','Insurance Groups','Utilities'],
-    dtValue:'Compliance & Governance',
-  },
-  {
-    name:'Laggards', sub:'Skeptics', pct:'16%',
-    start:0.862,end:1.0,   mean:0.931, sigma:0.048, weight:0.46,
-    color:'#3D5A99',
-    customers:['Legacy Industries'],
-    dtValue:'Modernization Path',
-  },
-];
+// ══ HELPERS ════════════════════════════════════════════════
+const lerp=(a,b,t)=>a+(b-a)*t;
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
 
-const CAPABILITIES = [
-  { icon:'⚡', name:'Davis® AI', desc:'Autonomous root-cause', color:DT.gold },
-  { icon:'🔭', name:'Full-Stack Obs.', desc:'600+ integrations', color:DT.teal },
-  { icon:'🛡️', name:'App Security', desc:'Runtime protection', color:DT.orange },
-  { icon:'⚙️', name:'AutoDiscovery', desc:'Zero-touch deploy', color:DT.green },
-  { icon:'📊', name:'Business Ops', desc:'Revenue impact link', color:DT.blue },
-];
-
-const BRIDGE_FEATURES = ['Davis® AI','Auto-Discovery','Full-Stack','AIOps','BizOps Analytics'];
-const BRIDGE_COLORS   = [DT.gold, DT.cyan, DT.blue, DT.teal, DT.orange];
-
-const BEFORE = ['Manual War Rooms','Alert Fatigue','Finger-Pointing','Slow MTTR'];
-const AFTER  = ['Autonomous AIOps','Precise Root-Cause','Auto-Remediation','Sub-Minute MTTR'];
-
-// ══════════════════════════════════════════════════════════════
-//  HELPERS
-// ══════════════════════════════════════════════════════════════
-function rRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x+r, y);
-  ctx.lineTo(x+w-r, y);
-  ctx.arcTo(x+w, y, x+w, y+r, r);
-  ctx.lineTo(x+w, y+h-r);
-  ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
-  ctx.lineTo(x+r, y+h);
-  ctx.arcTo(x, y+h, x, y+h-r, r);
-  ctx.lineTo(x, y+r);
-  ctx.arcTo(x, y, x+r, y, r);
-  ctx.closePath();
+function rRect(g,x,y,w,h,r){
+  g.beginPath();
+  g.moveTo(x+r,y); g.lineTo(x+w-r,y);
+  g.arcTo(x+w,y,x+w,y+r,r); g.lineTo(x+w,y+h-r);
+  g.arcTo(x+w,y+h,x+w-r,y+h,r); g.lineTo(x+r,y+h);
+  g.arcTo(x,y+h,x,y+h-r,r); g.lineTo(x,y+r);
+  g.arcTo(x,y,x+r,y,r); g.closePath();
 }
 
-function gauss(x, mean, sigma) {
-  return Math.exp(-0.5*((x-mean)/sigma)**2);
-}
-
-function bellY(xFrac) {
-  let val = 0;
-  for (const s of SEGS) {
-    const v = gauss(xFrac, s.mean, s.sigma) * s.weight;
-    if (v > val) val = v;
+function wrapText(g,txt,x,y,maxW,lh){
+  const words=txt.split(' ');
+  let line='', rows=[];
+  for(const w of words){
+    const test=line+w+' ';
+    if(g.measureText(test).width>maxW&&line){rows.push(line.trim());line=w+' ';}
+    else line=test;
   }
-  return val;
+  rows.push(line.trim());
+  rows.forEach((r,i)=>g.fillText(r,x,y+i*lh));
+  return rows.length;
 }
 
-function toSX(frac) { return CX + frac*CW; }
-function toSY(val)  { return CY + CH - val*CH*0.86; }
+function gauss(x,mean,sigma){return Math.exp(-0.5*((x-mean)/sigma)**2);}
 
-// ══════════════════════════════════════════════════════════════
-//  PRE-COMPUTE STATICS
-// ══════════════════════════════════════════════════════════════
-const STARS = Array.from({length:180}, () => ({
-  x: Math.random()*W, y: Math.random()*(H*0.6),
-  r: Math.random()*1.5+0.2, a: Math.random()*0.5+0.1,
-  ph: Math.random()*Math.PI*2,
-}));
+function bellY(xFrac){
+  let v=0;
+  for(const s of SEGS){const q=gauss(xFrac,s.mean,s.sigma)*s.weight;if(q>v)v=q;}
+  return v;
+}
 
-// Matrix rain in chasm
-const RAIN_COLS = Math.floor((cX2-cX1)/11);
-const RAIN = Array.from({length:RAIN_COLS}, () => ({
-  y: Math.random()*CH, speed: 0.18+Math.random()*0.5,
-  chars: Array.from({length:22}, () => Math.random()>0.5?'1':'0'),
-}));
+function toSX(f){return CX+f*CW;}
+function toSY(v){return CY+CH-v*CH*0.86;}
 
-// Particles crossing bridge
-const PARTS = Array.from({length:22}, () => ({
-  t: Math.random(), speed: 0.0025+Math.random()*0.004,
-  sz: 2+Math.random()*2.5, trail: [],
-  col: Math.random()>0.5 ? DT.cyan : DT.blue,
-}));
+// ══ DATA ═══════════════════════════════════════════════════
+const SEGS=[
+  {name:'Innovators',sub:'Technology Enthusiasts',pct:'2.5%',start:0,end:0.12,mean:0.060,sigma:0.038,weight:0.52,color:'#9D4EDD',customers:['FinTech R&D','Cloud-Native Startups','Platform Eng. Teams'],dtValue:'Developer Experience APIs'},
+  {name:'Early Adopters',sub:'Visionaries',pct:'13.5%',start:0.12,end:CST,mean:0.207,sigma:0.058,weight:0.70,color:'#00D1E8',customers:['Digital-First Banks','E-Commerce Leaders','SaaS Pioneers','Gaming Platforms'],dtValue:'Rapid Time-to-Value'},
+  {name:'Early Majority',sub:'Pragmatists',pct:'34%',start:CEN,end:0.648,mean:0.530,sigma:0.090,weight:1.00,color:'#1496FF',customers:['Global Enterprises','Retail Chains','Healthcare Systems','Telco Providers','Airline Groups'],dtValue:'Full-Stack Observability at Scale'},
+  {name:'Late Majority',sub:'Conservatives',pct:'34%',start:0.648,end:0.862,mean:0.755,sigma:0.078,weight:0.92,color:'#0A72D4',customers:['Government Agencies','Traditional Banks','Insurance Groups','Utilities'],dtValue:'Compliance & Governance'},
+  {name:'Laggards',sub:'Skeptics',pct:'16%',start:0.862,end:1.0,mean:0.931,sigma:0.048,weight:0.46,color:'#3D5A99',customers:['Legacy Industries'],dtValue:'Modernization Path'},
+];
 
-// Customer company dots floating in segments
-const COMPANY_DOTS = SEGS.flatMap(s =>
-  s.customers.map((name, i) => ({
-    name, seg: s,
-    xFrac: s.mean + (Math.random()-0.5)*0.04,
-    yOff: 28+i*22,
-    ph: Math.random()*Math.PI*2,
-  }))
-);
+const SEG_DETAIL=[
+  {
+    headline:'Technology Enthusiasts & R&D Pioneers',
+    body:'The first 2.5% to adopt new technology. Risk-takers who experiment freely without needing proven ROI — they shape the product roadmap through early exploration and deep technical feedback.',
+    painPoints:['No deep API / SDK flexibility','Missing AI/ML experimentation surfaces','Siloed telemetry across specialist teams','No self-service data exploration layer'],
+    dtValue:['OpenTelemetry-native ingest pipeline','Grail™ Data Lakehouse unlimited storage','AppEngine custom app extensibility','Full-fidelity distributed traces & profiles'],
+    kpis:[{v:'<1 wk',l:'Time to Value'},{v:'100%',l:'API Coverage'},{v:'PB+',l:'Data at Scale'}],
+    quote:'"Dynatrace gives us the raw power and openness to build exactly what we need."',
+  },
+  {
+    headline:'Digital Visionaries Driving Transformation',
+    body:'Visionaries treat observability as a strategic competitive differentiator. They move fast, accept measured risk, and judge success purely by business outcomes — not by uptime percentages.',
+    painPoints:['Thousands of false-positive alerts per day','No link between tech health and revenue KPIs','Slow triage across hundreds of microservices','Manual, reactive cloud cost management'],
+    dtValue:['Davis® AI autonomous root-cause analysis','Business Events & BizOps Analytics','Cloud cost optimisation insights native','Automated SLO tracking and breach alerting'],
+    kpis:[{v:'90%',l:'Noise Reduction'},{v:'3×',l:'Release Frequency'},{v:'<5 min',l:'Mean MTTR'}],
+    quote:'"We went from reactive firefighting to proactive intelligence in under 30 days."',
+  },
+  {
+    headline:'Pragmatic Enterprise Adopters at Scale',
+    body:'The largest opportunity segment — and the primary chasm battleground. Pragmatists demand proven solutions, measurable ROI, seamless enterprise integration, and vendor accountability before committing long-term.',
+    painPoints:['Sprawling hybrid and multi-cloud topologies','Complex compliance, audit, and data governance','Thousands of services and APIs to instrument','Legacy tool sprawl across multiple incumbents'],
+    dtValue:['Auto-discovery across 600+ technologies','Enterprise SSO, RBAC, and ITSM integrations','OneAgent zero-touch full-stack coverage','Unified observability + runtime app security'],
+    kpis:[{v:'80%',l:'MTTR Reduction'},{v:'99.9%',l:'SLO Achievement'},{v:'40%',l:'OpEx Savings'}],
+    quote:'"The auto-discovery alone eliminated three separate monitoring tools we were paying for."',
+  },
+  {
+    headline:'Risk-Averse Enterprise Conservatives',
+    body:'Late majority enterprises move only after the market has fully validated a technology. They prioritise operational stability, regulatory compliance, long-term vendor relationships, and proven migration paths.',
+    painPoints:['Legacy mainframe and monolith visibility gaps','Strict data sovereignty and regulatory constraints','12–18 month procurement and approval cycles','Limited internal DevOps and SRE maturity'],
+    dtValue:['z/OS and mainframe full-stack monitoring','FedRAMP / GDPR-compliant SaaS deployment','Professional services and managed service','Phased modernisation roadmap co-design'],
+    kpis:[{v:'100%',l:'Compliance Coverage'},{v:'99.95%',l:'Uptime SLA'},{v:'Multi-yr',l:'Partnership Depth'}],
+    quote:'"The governance-first approach and certifications made exec sign-off straightforward."',
+  },
+  {
+    headline:'Legacy-Bound Late-Stage Adopters',
+    body:'Laggards adopt only under external pressure: regulation, security incidents, or competitive necessity. A strategic long-tail modernisation opportunity — high effort, transformational outcomes.',
+    painPoints:['Decades-old infrastructure with zero observability','No internal observability culture or practice','Critical systems with zero instrumentation','Deep fear of disrupting stable production workloads'],
+    dtValue:['Non-invasive, agent-optional deployment','Legacy SNMP, JDBC, and syslog monitoring','Managed co-pilot guided modernisation path','Zero-risk proof-of-value engagement model'],
+    kpis:[{v:'0→Full',l:'Obs. Maturity'},{v:'6 wks',l:'PoV to Contract'},{v:'∞',l:'ROI Potential'}],
+    quote:'"We had no idea what was running in production. Now we have total clarity."',
+  },
+];
 
-// ══════════════════════════════════════════════════════════════
-//  DRAW: BACKGROUND
-// ══════════════════════════════════════════════════════════════
-function drawBg(t) {
-  // Base fill
-  cx.fillStyle = DT.bg;
-  cx.fillRect(0, 0, W, H);
+const CAPABILITIES=[
+  {icon:'⚡',name:'Davis® AI',desc:'Autonomous root-cause',color:DT.gold},
+  {icon:'🔭',name:'Full-Stack Obs.',desc:'600+ integrations',color:DT.teal},
+  {icon:'🛡️',name:'App Security',desc:'Runtime protection',color:DT.orange},
+  {icon:'⚙️',name:'AutoDiscovery',desc:'Zero-touch deploy',color:DT.green},
+  {icon:'📊',name:'Business Ops',desc:'Revenue impact link',color:DT.blue},
+];
 
-  // Nebula centre-glow
-  const neb = cx.createRadialGradient(W/2, H*0.48, 0, W/2, H*0.48, W*0.42);
-  neb.addColorStop(0,   '#1496FF09');
-  neb.addColorStop(0.5, '#00D1E805');
-  neb.addColorStop(1,   'transparent');
-  cx.fillStyle = neb;
-  cx.fillRect(0, 0, W, H);
+const BRIDGE_FEATURES=['Davis® AI','Auto-Discovery','Full-Stack','AIOps','BizOps Analytics'];
+const BRIDGE_COLORS=[DT.gold,DT.cyan,DT.blue,DT.teal,DT.orange];
 
-  // Stars
-  STARS.forEach(s => {
-    const tw = 0.7+0.3*Math.sin(t*0.7+s.ph);
-    cx.save();
-    cx.globalAlpha = s.a*tw;
-    cx.fillStyle = '#FFFFFF';
-    cx.beginPath();
-    cx.arc(s.x, s.y, s.r, 0, Math.PI*2);
-    cx.fill();
-    cx.restore();
+const BEFORE_EXT=[
+  {icon:'⚠',text:'Manual War Rooms',sub:'12-hour incident bridges'},
+  {icon:'🔔',text:'Alert Storms',sub:'1000s false positives/day'},
+  {icon:'🔍',text:'Days to Root-Cause',sub:'Manual log archaeology'},
+  {icon:'😰',text:'Engineer Burnout',sub:'Chronic on-call fatigue'},
+  {icon:'🧩',text:'Tool Sprawl',sub:'15+ disconnected tools'},
+  {icon:'🫵',text:'Blame Culture',sub:'No shared source of truth'},
+];
+const AFTER_EXT=[
+  {icon:'⚡',text:'Autonomous AIOps',sub:'Davis® handles 80% of events'},
+  {icon:'🎯',text:'Precise Root-Cause',sub:'Single causal event in seconds'},
+  {icon:'⏱',text:'Sub-Minute MTTR',sub:'Automated remediation flows'},
+  {icon:'😊',text:'Dev Efficiency +40%',sub:'Less toil, more innovation'},
+  {icon:'🔌',text:'600+ Integrations',sub:'Auto-discovered, zero config'},
+  {icon:'💰',text:'Business Impact',sub:'Revenue linked to tech health'},
+];
+
+// ══ STATICS ═════════════════════════════════════════════════
+const STARS=Array.from({length:180},()=>({x:Math.random()*W,y:Math.random()*(H*0.6),r:Math.random()*1.5+0.2,a:Math.random()*0.5+0.1,ph:Math.random()*Math.PI*2}));
+const RAIN_COLS=Math.floor((cX2-cX1)/11);
+const RAIN=Array.from({length:RAIN_COLS},()=>({y:Math.random()*CH,speed:0.18+Math.random()*0.5,chars:Array.from({length:22},()=>Math.random()>0.5?'1':'0')}));
+const PARTS=Array.from({length:22},()=>({t:Math.random(),speed:0.0025+Math.random()*0.004,sz:2+Math.random()*2.5,trail:[],col:Math.random()>0.5?DT.cyan:DT.blue}));
+
+// ══ STATE ═══════════════════════════════════════════════════
+let selectedSeg=null, lastSelectedSeg=0;
+let hoverSeg=null, hoverClose=false;
+let chasmHovered=false, chasmExpand=0, detailAlpha=0;
+let mouseX=0, mouseY=0, t=0;
+const segExpand=Array(SEGS.length).fill(0); // per-segment hover expansion 0→1
+
+// Close button hit region (updated each frame)
+let closeBtnX=W/2+310, closeBtnY=H/2-145, closeBtnR=14;
+
+// ══ EVENTS ══════════════════════════════════════════════════
+c.addEventListener('mousemove', e=>{
+  const r=c.getBoundingClientRect();
+  mouseX=(e.clientX-r.left)*(W/r.width);
+  mouseY=(e.clientY-r.top)*(H/r.height);
+
+  chasmHovered=(mouseX>=cX1&&mouseX<=cX2&&mouseY>=CY&&mouseY<=CY+CH);
+  hoverSeg=null;
+  if(mouseY>=CY&&mouseY<=CY+CH&&!chasmHovered){
+    for(let i=0;i<SEGS.length;i++){
+      if(mouseX>=toSX(SEGS[i].start)&&mouseX<=toSX(SEGS[i].end)){hoverSeg=i;break;}
+    }
+  }
+  const dx=mouseX-closeBtnX, dy=mouseY-closeBtnY;
+  hoverClose=detailAlpha>0.3&&Math.sqrt(dx*dx+dy*dy)<=closeBtnR;
+  c.style.cursor=(chasmHovered||hoverSeg!==null||hoverClose)?'pointer':'default';
+});
+
+c.addEventListener('click', ()=>{
+  if(hoverClose){selectedSeg=null;return;}
+  if(hoverSeg!==null){
+    if(hoverSeg===selectedSeg) selectedSeg=null;
+    else{selectedSeg=hoverSeg; lastSelectedSeg=hoverSeg;}
+    return;
+  }
+  if(!chasmHovered) selectedSeg=null;
+});
+
+document.addEventListener('keydown', e=>{if(e.key==='Escape')selectedSeg=null;});
+
+// ══ DRAW: BACKGROUND ════════════════════════════════════════
+function drawBg(t){
+  cx.fillStyle=DT.bg; cx.fillRect(0,0,W,H);
+  const neb=cx.createRadialGradient(W/2,H*0.48,0,W/2,H*0.48,W*0.42);
+  neb.addColorStop(0,'#1496FF09'); neb.addColorStop(0.5,'#00D1E805'); neb.addColorStop(1,'transparent');
+  cx.fillStyle=neb; cx.fillRect(0,0,W,H);
+  STARS.forEach(s=>{
+    cx.save(); cx.globalAlpha=s.a*(0.7+0.3*Math.sin(t*0.7+s.ph));
+    cx.fillStyle='#FFF'; cx.beginPath(); cx.arc(s.x,s.y,s.r,0,Math.PI*2); cx.fill(); cx.restore();
   });
 }
 
-// ══════════════════════════════════════════════════════════════
-//  DRAW: GRID
-// ══════════════════════════════════════════════════════════════
-function drawGrid() {
-  cx.save();
-  cx.strokeStyle = DT.grid;
-  cx.lineWidth   = 1;
-  cx.globalAlpha = 0.7;
-  for (let i=0;i<=12;i++) {
-    const x = CX+(i/12)*CW;
-    cx.beginPath(); cx.moveTo(x, CY); cx.lineTo(x, CY+CH); cx.stroke();
-  }
-  for (let i=0;i<=6;i++) {
-    const y = CY+(i/6)*CH;
-    cx.beginPath(); cx.moveTo(CX,y); cx.lineTo(CX+CW,y); cx.stroke();
-  }
+// ══ DRAW: GRID ══════════════════════════════════════════════
+function drawGrid(){
+  cx.save(); cx.strokeStyle=DT.grid; cx.lineWidth=1; cx.globalAlpha=0.7;
+  for(let i=0;i<=12;i++){const x=CX+(i/12)*CW;cx.beginPath();cx.moveTo(x,CY);cx.lineTo(x,CY+CH);cx.stroke();}
+  for(let i=0;i<=6;i++){const y=CY+(i/6)*CH;cx.beginPath();cx.moveTo(CX,y);cx.lineTo(CX+CW,y);cx.stroke();}
   cx.restore();
 }
 
-// ══════════════════════════════════════════════════════════════
-//  DRAW: CHASM VOID
-// ══════════════════════════════════════════════════════════════
-function drawChasm(t) {
+// ══ DRAW: CHASM WITH EXPANDABLE BEFORE/AFTER ════════════════
+function drawChasm(t){
   const x1=cX1, x2=cX2, cw=x2-x1;
+  const e=chasmExpand;
 
-  // Deep void
-  cx.fillStyle = '#00000095';
-  cx.fillRect(x1, CY, cw, CH);
+  // Void
+  cx.fillStyle='#00000095'; cx.fillRect(x1,CY,cw,CH);
 
   // Matrix rain
-  cx.save();
-  cx.font = '9px monospace';
-  RAIN.forEach((col, i) => {
-    col.y = (col.y + col.speed*1.8) % CH;
-    col.chars.forEach((ch, j) => {
-      const ry    = CY + (col.y + j*13) % CH;
-      const alpha = Math.max(0, 0.4 - j*0.02);
-      cx.globalAlpha = alpha;
-      cx.fillStyle   = '#00FF44';
-      cx.fillText(ch, x1 + i*(cw/RAIN_COLS)+2, ry);
+  cx.save(); cx.font='9px monospace';
+  RAIN.forEach((col,i)=>{
+    col.y=(col.y+col.speed*1.8)%CH;
+    col.chars.forEach((ch,j)=>{
+      const ry=CY+(col.y+j*13)%CH;
+      cx.globalAlpha=Math.max(0,0.4-j*0.02);
+      cx.fillStyle='#00FF44';
+      cx.fillText(ch,x1+i*(cw/RAIN_COLS)+2,ry);
     });
   });
   cx.restore();
 
-  // Left danger edge glow
-  const lg = cx.createLinearGradient(x1-35, 0, x1, 0);
-  lg.addColorStop(0, 'transparent'); lg.addColorStop(1, '#FF4D2E28');
-  cx.fillStyle = lg; cx.fillRect(x1-35, CY, 35, CH);
-
-  // Right opportunity glow
-  const rg = cx.createLinearGradient(x2, 0, x2+35, 0);
-  rg.addColorStop(0, '#1496FF28'); rg.addColorStop(1, 'transparent');
-  cx.fillStyle = rg; cx.fillRect(x2, CY, 35, CH);
+  // Edge glows
+  const lg=cx.createLinearGradient(x1-35,0,x1,0);
+  lg.addColorStop(0,'transparent'); lg.addColorStop(1,'#FF4D2E28');
+  cx.fillStyle=lg; cx.fillRect(x1-35,CY,35,CH);
+  const rg=cx.createLinearGradient(x2,0,x2+35,0);
+  rg.addColorStop(0,'#1496FF28'); rg.addColorStop(1,'transparent');
+  cx.fillStyle=rg; cx.fillRect(x2,CY,35,CH);
 
   // Boundary dashes
-  cx.save();
-  cx.setLineDash([5,5]);
-  cx.lineWidth = 1.5;
-  cx.strokeStyle = '#FF4D2E55';
-  cx.beginPath(); cx.moveTo(x1, CY); cx.lineTo(x1, CY+CH); cx.stroke();
-  cx.strokeStyle = '#1496FF55';
-  cx.beginPath(); cx.moveTo(x2, CY); cx.lineTo(x2, CY+CH); cx.stroke();
+  cx.save(); cx.setLineDash([5,5]); cx.lineWidth=1.5;
+  cx.strokeStyle='#FF4D2E55'; cx.beginPath(); cx.moveTo(x1,CY); cx.lineTo(x1,CY+CH); cx.stroke();
+  cx.strokeStyle='#1496FF55'; cx.beginPath(); cx.moveTo(x2,CY); cx.lineTo(x2,CY+CH); cx.stroke();
   cx.restore();
 
-  // "THE CHASM" rotated label
+  // "THE CHASM" rotated
+  cx.save(); cx.translate((x1+x2)/2,CY+CH/2+50); cx.rotate(-Math.PI/2);
+  cx.textAlign='center'; cx.font='bold 10px Inter,sans-serif';
+  cx.globalAlpha=0.45+0.25*Math.sin(t*1.4); cx.fillStyle='#FF4D2E';
+  cx.fillText('T H E   C H A S M',0,0); cx.restore();
+
+  // "Hover to expand" hint (only when collapsed)
+  if(e<0.1){
+    cx.save(); cx.globalAlpha=0.35*(1-e*10);
+    cx.textAlign='center'; cx.font='8px Inter,sans-serif'; cx.fillStyle=DT.muted;
+    cx.fillText('↔ hover chasm to expand',(x1+x2)/2,CY+CH-8);
+    cx.restore();
+  }
+}
+
+// ══ DRAW: CHASM OVERLAY (before/after — rendered on top) ════
+function drawChasmOverlay(){
+  const x1=cX1, x2=cX2;
+  const e=chasmExpand;
+
+  const bx      = x1 - lerp(62, 120, e);
+  const ax      = x2 + lerp(62, 120, e);
+  const spacing = lerp(24, 34, e);
+  const fs      = lerp(9, 11, e);
+  const pillPad = lerp(12, 20, e);
+  const pillH   = lerp(18, 28, e);
+
+  // Section headers
+  const hs = lerp(9, 12, e);
   cx.save();
-  cx.translate((x1+x2)/2, CY+CH/2+50);
-  cx.rotate(-Math.PI/2);
-  cx.textAlign = 'center';
-  cx.font = 'bold 10px Inter, sans-serif';
-  cx.globalAlpha = 0.45 + 0.25*Math.sin(t*1.4);
-  cx.fillStyle = '#FF4D2E';
-  cx.fillText('T H E   C H A S M', 0, 0);
+  cx.textAlign='center'; cx.font=`bold ${hs.toFixed(1)}px Inter,sans-serif`;
+  cx.fillStyle=DT.red+'BB'; cx.fillText('BEFORE DT', bx, CY+10);
+  cx.fillStyle=DT.cyan+'BB'; cx.fillText('AFTER DT', ax, CY+10);
   cx.restore();
 
-  // Before/After diagnostic pills
-  const pill = (texts, px, py, col) => {
-    texts.forEach((txt, i) => {
-      const tw  = cx.measureText(txt).width;
-      const pw  = tw+14, ph=18;
-      const ey  = py + i*24;
+  // Connecting arrow at full expansion
+  if(e>0.7){
+    const arrowAlpha=(e-0.7)/0.3;
+    cx.save(); cx.globalAlpha=arrowAlpha*0.5;
+    cx.strokeStyle=DT.cyan; cx.lineWidth=1; cx.setLineDash([3,4]);
+    cx.beginPath(); cx.moveTo(x1-10,CY+CH/2); cx.lineTo(x2+10,CY+CH/2); cx.stroke();
+    cx.setLineDash([]);
+    cx.fillStyle=DT.cyan;
+    cx.beginPath(); cx.moveTo(x2+10,CY+CH/2); cx.lineTo(x2+2,CY+CH/2-5); cx.lineTo(x2+2,CY+CH/2+5); cx.closePath(); cx.fill();
+    cx.restore();
+  }
+
+  const drawExpandPills=(items, colX, col)=>{
+    items.forEach((item,i)=>{
+      const threshold=lerp(4,6,e);
+      const itemAlpha=clamp(threshold-i,0,1);
+      if(itemAlpha<0.02) return;
+
+      const py=CY+24+i*spacing;
+      if(py+pillH/2>CY+CH-4) return;
+
+      const label=item.icon+' '+item.text;
       cx.save();
-      cx.fillStyle   = col+'18';
-      cx.strokeStyle = col+'50';
-      cx.lineWidth   = 1;
-      rRect(cx, px-pw/2, ey-ph/2, pw, ph, 9);
-      cx.fill(); cx.stroke();
-      cx.textAlign    = 'center';
-      cx.textBaseline = 'middle';
-      cx.font         = '9px Inter, sans-serif';
-      cx.fillStyle    = col+'CC';
-      cx.fillText(txt, px, ey);
+      cx.font=`${fs.toFixed(1)}px Inter,sans-serif`;
+      const tw=cx.measureText(label).width;
+      const pw=tw+pillPad;
+
+      cx.globalAlpha=itemAlpha;
+      cx.fillStyle=col+'15'; cx.strokeStyle=col+'55'; cx.lineWidth=1;
+      rRect(cx,colX-pw/2,py-pillH/2,pw,pillH,9); cx.fill(); cx.stroke();
+
+      cx.textAlign='center'; cx.textBaseline='middle'; cx.fillStyle=col+'CC';
+      const textY=item.sub&&e>0.45 ? py-5 : py;
+      cx.fillText(label,colX,textY);
+
+      if(item.sub&&e>0.45){
+        const subAlpha=itemAlpha*clamp((e-0.45)/0.35,0,1);
+        cx.globalAlpha=subAlpha;
+        cx.font=`${(fs*0.82).toFixed(1)}px Inter,sans-serif`;
+        cx.fillStyle=col+'77';
+        cx.fillText(item.sub,colX,py+8);
+      }
       cx.restore();
     });
   };
-  pill(BEFORE, x1-55, CY+20, DT.red);
-  pill(AFTER,  x2+55, CY+20, DT.cyan);
+
+  drawExpandPills(BEFORE_EXT, bx, DT.red);
+  drawExpandPills(AFTER_EXT,  ax, DT.cyan);
 }
 
-// ══════════════════════════════════════════════════════════════
-//  DRAW: BELL CURVE SEGMENTS
-// ══════════════════════════════════════════════════════════════
-function drawBellCurve() {
-  SEGS.forEach(seg => {
-    const STEPS  = 150;
-    const startX = toSX(seg.start);
-    const endX   = toSX(seg.end);
+// ══ DRAW: BELL CURVE ════════════════════════════════════════
+function drawBellCurve(){
+  const anySelected=selectedSeg!==null;
+  SEGS.forEach((seg,si)=>{
+    const isSelected=selectedSeg===si;
+    const isHovered=hoverSeg===si;
+    const dim=anySelected&&!isSelected;
+    const STEPS=150;
 
-    const grad = cx.createLinearGradient(0, CY, 0, CY+CH);
-    grad.addColorStop(0,   seg.color+'DD');
-    grad.addColorStop(0.6, seg.color+'44');
-    grad.addColorStop(1,   seg.color+'08');
+    const grad=cx.createLinearGradient(0,CY,0,CY+CH);
+    grad.addColorStop(0,seg.color+'DD');
+    grad.addColorStop(0.6,seg.color+'44');
+    grad.addColorStop(1,seg.color+'08');
 
-    // Filled area
     cx.save();
-    cx.shadowColor = seg.color;
-    cx.shadowBlur  = 18;
-    cx.beginPath();
-    cx.moveTo(startX, CY+CH);
-    for (let i=0;i<=STEPS;i++) {
-      const xf = seg.start + (i/STEPS)*(seg.end-seg.start);
-      cx.lineTo(toSX(xf), toSY(bellY(xf)));
+    cx.globalAlpha=dim?0.22:1;
+    cx.shadowColor=seg.color;
+    cx.shadowBlur=(isSelected||isHovered)?30:16;
+
+    cx.beginPath(); cx.moveTo(toSX(seg.start),CY+CH);
+    for(let i=0;i<=STEPS;i++){
+      const xf=seg.start+(i/STEPS)*(seg.end-seg.start);
+      cx.lineTo(toSX(xf),toSY(bellY(xf)));
     }
-    cx.lineTo(endX, CY+CH);
-    cx.closePath();
-    cx.fillStyle = grad;
-    cx.fill();
-    cx.restore();
+    cx.lineTo(toSX(seg.end),CY+CH); cx.closePath();
+    cx.fillStyle=grad; cx.fill();
 
-    // Glowing outline
-    cx.save();
-    cx.shadowColor = seg.color;
-    cx.shadowBlur  = 12;
-    cx.strokeStyle = seg.color;
-    cx.lineWidth   = 2.5;
+    cx.strokeStyle=seg.color; cx.lineWidth=isSelected?3.5:isHovered?3:2.5;
+    cx.shadowBlur=(isSelected||isHovered)?18:10;
     cx.beginPath();
-    for (let i=0;i<=STEPS;i++) {
-      const xf = seg.start + (i/STEPS)*(seg.end-seg.start);
-      i===0
-        ? cx.moveTo(toSX(xf), toSY(bellY(xf)))
-        : cx.lineTo(toSX(xf), toSY(bellY(xf)));
+    for(let i=0;i<=STEPS;i++){
+      const xf=seg.start+(i/STEPS)*(seg.end-seg.start);
+      i===0?cx.moveTo(toSX(xf),toSY(bellY(xf))):cx.lineTo(toSX(xf),toSY(bellY(xf)));
     }
     cx.stroke();
     cx.restore();
   });
 }
 
-// ══════════════════════════════════════════════════════════════
-//  DRAW: DYNATRACE BRIDGE
-// ══════════════════════════════════════════════════════════════
-function drawBridge(t) {
-  const bx1 = cX1 - 75, bx2 = cX2 + 75;
-  const bw   = bx2 - bx1;
-  const midX = (bx1+bx2)/2;
+// ══ DRAW: BRIDGE ════════════════════════════════════════════
+function drawBridge(t){
+  const bx1=cX1-75, bx2=cX2+75, bw=bx2-bx1, midX=(bx1+bx2)/2;
+  const bY=CY+CH*0.37, bH=40, bm=4, archTop=bY-80;
 
-  // Bridge sits at 38% from top
-  const bY  = CY + CH*0.37;
-  const bH  = 40;
-  const bm  = 4; // beam thickness
-
-  // === Arch over the bridge ===
-  const archTop = bY - 80;
   cx.save();
-  cx.strokeStyle = DT.cyan;
-  cx.lineWidth   = 2;
-  cx.shadowColor = DT.cyan;
-  cx.shadowBlur  = 20;
-
-  const archGrad = cx.createLinearGradient(bx1, 0, bx2, 0);
-  archGrad.addColorStop(0, DT.cyan+'00');
-  archGrad.addColorStop(0.15, DT.teal);
-  archGrad.addColorStop(0.5, DT.blue);
-  archGrad.addColorStop(0.85, DT.teal);
-  archGrad.addColorStop(1, DT.cyan+'00');
-
-  cx.strokeStyle = archGrad;
-  cx.beginPath();
-  cx.moveTo(bx1+30, bY);
-  cx.bezierCurveTo(bx1+30, archTop, bx2-30, archTop, bx2-30, bY);
-  cx.stroke();
-
-  // Arch support lines (like a suspension bridge)
-  cx.lineWidth   = 1;
-  cx.globalAlpha = 0.4;
-  [0.2,0.35,0.5,0.65,0.8].forEach(frac => {
-    const sx = bx1+30 + frac*(bw-60);
-    cx.strokeStyle = DT.cyan;
-    cx.beginPath();
-    cx.moveTo(sx, archTop + (frac<0.5 ? frac*2 : (1-frac)*2) * (bY-archTop));
-    cx.lineTo(sx, bY);
-    cx.stroke();
+  const aGrad=cx.createLinearGradient(bx1,0,bx2,0);
+  aGrad.addColorStop(0,DT.cyan+'00'); aGrad.addColorStop(0.15,DT.teal);
+  aGrad.addColorStop(0.5,DT.blue); aGrad.addColorStop(0.85,DT.teal);
+  aGrad.addColorStop(1,DT.cyan+'00');
+  cx.strokeStyle=aGrad; cx.lineWidth=2; cx.shadowColor=DT.cyan; cx.shadowBlur=20;
+  cx.beginPath(); cx.moveTo(bx1+30,bY);
+  cx.bezierCurveTo(bx1+30,archTop,bx2-30,archTop,bx2-30,bY); cx.stroke();
+  cx.lineWidth=1; cx.globalAlpha=0.4;
+  [0.2,0.35,0.5,0.65,0.8].forEach(f=>{
+    const sx=bx1+30+f*(bw-60);
+    cx.strokeStyle=DT.cyan; cx.beginPath();
+    cx.moveTo(sx,archTop+(f<0.5?f*2:(1-f)*2)*(bY-archTop)); cx.lineTo(sx,bY); cx.stroke();
   });
   cx.restore();
 
-  // === Horizontal platform ===
-  const platGrad = cx.createLinearGradient(bx1, 0, bx2, 0);
-  platGrad.addColorStop(0,    DT.cyan+'00');
-  platGrad.addColorStop(0.1,  DT.cyan+'CC');
-  platGrad.addColorStop(0.5,  DT.blue+'FF');
-  platGrad.addColorStop(0.9,  DT.cyan+'CC');
-  platGrad.addColorStop(1,    DT.cyan+'00');
+  const pGrad=cx.createLinearGradient(bx1,0,bx2,0);
+  pGrad.addColorStop(0,DT.cyan+'00'); pGrad.addColorStop(0.1,DT.cyan+'CC');
+  pGrad.addColorStop(0.5,DT.blue+'FF'); pGrad.addColorStop(0.9,DT.cyan+'CC');
+  pGrad.addColorStop(1,DT.cyan+'00');
+  cx.save(); cx.shadowColor=DT.cyan; cx.shadowBlur=30;
+  cx.fillStyle=pGrad; cx.fillRect(bx1,bY,bw,bm); cx.fillRect(bx1,bY+bH,bw,bm); cx.restore();
 
-  cx.save();
-  cx.shadowColor = DT.cyan;
-  cx.shadowBlur  = 30;
-  cx.fillStyle   = platGrad;
-  cx.fillRect(bx1, bY, bw, bm);            // top beam
-  cx.fillRect(bx1, bY+bH, bw, bm);         // bottom beam
+  const fGrad=cx.createLinearGradient(0,bY,0,bY+bH);
+  fGrad.addColorStop(0,DT.cyan+'1A'); fGrad.addColorStop(1,DT.blue+'0A');
+  cx.fillStyle=fGrad; cx.fillRect(bx1,bY+bm,bw,bH-bm);
+
+  cx.save(); cx.strokeStyle=DT.cyan+'45'; cx.lineWidth=1.2;
+  for(let i=0;i<=7;i++){const sx=bx1+(i/7)*bw;cx.beginPath();cx.moveTo(sx,bY);cx.lineTo(sx,bY+bH+bm);cx.stroke();}
   cx.restore();
 
-  // Platform interior fill
-  const fillGrad = cx.createLinearGradient(0, bY, 0, bY+bH);
-  fillGrad.addColorStop(0, DT.cyan+'1A');
-  fillGrad.addColorStop(1, DT.blue+'0A');
-  cx.fillStyle = fillGrad;
-  cx.fillRect(bx1, bY+bm, bw, bH-bm);
+  cx.save(); cx.textAlign='center'; cx.textBaseline='middle';
+  cx.font='bold 11.5px Inter,sans-serif'; cx.fillStyle=DT.white;
+  cx.shadowColor=DT.cyan; cx.shadowBlur=12;
+  cx.fillText('DYNATRACE OBSERVABILITY PLATFORM',midX,bY+bH/2+3); cx.restore();
 
-  // Vertical struts
-  cx.save();
-  cx.strokeStyle = DT.cyan+'45';
-  cx.lineWidth   = 1.2;
-  for (let i=0;i<=7;i++) {
-    const sx = bx1 + (i/7)*bw;
-    cx.beginPath(); cx.moveTo(sx, bY); cx.lineTo(sx, bY+bH+bm); cx.stroke();
-  }
-  cx.restore();
-
-  // Platform label
-  cx.save();
-  cx.textAlign    = 'center';
-  cx.textBaseline = 'middle';
-  cx.font         = 'bold 11.5px Inter, sans-serif';
-  cx.fillStyle    = DT.white;
-  cx.shadowColor  = DT.cyan;
-  cx.shadowBlur   = 12;
-  cx.fillText('DYNATRACE OBSERVABILITY PLATFORM', midX, bY+bH/2+3);
-  cx.restore();
-
-  // === Feature badges above platform ===
-  BRIDGE_FEATURES.forEach((f, i) => {
-    const fx  = bx1 + (i+0.5)/BRIDGE_FEATURES.length*bw;
-    const fy  = bY - 32;
-    const col = BRIDGE_COLORS[i];
+  BRIDGE_FEATURES.forEach((f,i)=>{
+    const fx=bx1+(i+0.5)/BRIDGE_FEATURES.length*bw, fy=bY-32, col=BRIDGE_COLORS[i];
     cx.save();
-    const tw  = cx.measureText(f).width;
-    const bfw = tw+16, bfh=20;
-    cx.fillStyle   = col+'22';
-    cx.strokeStyle = col+'70';
-    cx.lineWidth   = 1;
-    rRect(cx, fx-bfw/2, fy-bfh/2, bfw, bfh, 10);
-    cx.fill(); cx.stroke();
-    cx.textAlign    = 'center';
-    cx.textBaseline = 'middle';
-    cx.font         = 'bold 9px Inter, sans-serif';
-    cx.fillStyle    = col;
-    cx.fillText(f, fx, fy);
-
-    // Dotted line down to bridge
-    cx.strokeStyle  = col+'40';
-    cx.lineWidth    = 1;
-    cx.setLineDash([2,3]);
-    cx.beginPath();
-    cx.moveTo(fx, fy+bfh/2);
-    cx.lineTo(fx, bY);
-    cx.stroke();
+    const tw=cx.measureText(f).width, bfw=tw+16, bfh=20;
+    cx.fillStyle=col+'22'; cx.strokeStyle=col+'70'; cx.lineWidth=1;
+    rRect(cx,fx-bfw/2,fy-bfh/2,bfw,bfh,10); cx.fill(); cx.stroke();
+    cx.textAlign='center'; cx.textBaseline='middle';
+    cx.font='bold 9px Inter,sans-serif'; cx.fillStyle=col; cx.fillText(f,fx,fy);
+    cx.strokeStyle=col+'40'; cx.lineWidth=1; cx.setLineDash([2,3]);
+    cx.beginPath(); cx.moveTo(fx,fy+bfh/2); cx.lineTo(fx,bY); cx.stroke();
     cx.restore();
   });
 
-  // Pulsing aura on platform
-  const pulse = 0.4 + 0.3*Math.sin(t*2.2);
-  cx.save();
-  cx.globalAlpha = 0.18*pulse;
-  const aura = cx.createRadialGradient(midX, bY+bH/2, 0, midX, bY+bH/2, bw/2.5);
-  aura.addColorStop(0, DT.cyan);
-  aura.addColorStop(1, 'transparent');
-  cx.fillStyle = aura;
-  cx.fillRect(bx1, bY-60, bw, bH+120);
-  cx.restore();
+  const pulse=0.4+0.3*Math.sin(t*2.2);
+  cx.save(); cx.globalAlpha=0.18*pulse;
+  const aura=cx.createRadialGradient(midX,bY+bH/2,0,midX,bY+bH/2,bw/2.5);
+  aura.addColorStop(0,DT.cyan); aura.addColorStop(1,'transparent');
+  cx.fillStyle=aura; cx.fillRect(bx1,bY-60,bw,bH+120); cx.restore();
 }
 
-// ══════════════════════════════════════════════════════════════
-//  DRAW: FLOWING PARTICLES
-// ══════════════════════════════════════════════════════════════
-function drawParticles(t) {
-  const bx1    = cX1-75, bx2=cX2+75;
-  const bridgeY = CY + CH*0.37 + 22;
+// ══ DRAW: PARTICLES ══════════════════════════════════════════
+function drawParticles(){
+  const bx1=cX1-75, bx2=cX2+75, bridgeY=CY+CH*0.37+22;
+  PARTS.forEach(p=>{
+    p.t=(p.t+p.speed)%1;
+    const px=bx1+p.t*(bx2-bx1), py=bridgeY+Math.sin(p.t*Math.PI*5)*7;
+    p.trail.unshift({x:px,y:py});
+    if(p.trail.length>14)p.trail.pop();
+    p.trail.forEach((pt,i)=>{
+      cx.save(); cx.globalAlpha=(1-i/p.trail.length)*0.6;
+      cx.fillStyle=p.col; cx.beginPath();
+      cx.arc(pt.x,pt.y,p.sz*(1-i/p.trail.length*0.65),0,Math.PI*2); cx.fill(); cx.restore();
+    });
+    cx.save(); cx.fillStyle='#FFF'; cx.shadowColor=p.col; cx.shadowBlur=14;
+    cx.beginPath(); cx.arc(px,py,p.sz,0,Math.PI*2); cx.fill(); cx.restore();
+  });
+}
 
-  PARTS.forEach(p => {
-    p.t = (p.t+p.speed) % 1;
-    const px = bx1 + p.t*(bx2-bx1);
-    const py = bridgeY + Math.sin(p.t*Math.PI*5)*7;
+// ══ DRAW: SEGMENT LABELS + CHIPS ════════════════════════════
+function drawSegmentContent(){
+  const anySelected=selectedSeg!==null;
+  SEGS.forEach((seg,si)=>{
+    const isSelected=selectedSeg===si;
+    const isHovered=hoverSeg===si&&selectedSeg===null;
+    const dim=anySelected&&!isSelected;
+    const midX=toSX((seg.start+seg.end)/2), lY=CY+CH+26;
 
-    p.trail.unshift({x:px, y:py});
-    if (p.trail.length > 14) p.trail.pop();
+    cx.save(); cx.globalAlpha=dim?0.25:1;
+    cx.textAlign='center'; cx.font=`bold ${isSelected?13:12}px Inter,sans-serif`;
+    cx.fillStyle=seg.color; cx.shadowColor=seg.color; cx.shadowBlur=isSelected?12:8;
+    cx.fillText(seg.name,midX,lY);
+    cx.shadowBlur=0; cx.font='10px Inter,sans-serif'; cx.fillStyle=DT.muted;
+    cx.fillText(seg.sub,midX,lY+15); cx.fillText(seg.pct+' of Market',midX,lY+28);
+    cx.font='8.5px Inter,sans-serif'; cx.fillStyle=seg.color+'80';
+    cx.fillText('DT: '+seg.dtValue,midX,lY+42); cx.restore();
 
-    p.trail.forEach((pt, i) => {
-      const a = (1 - i/p.trail.length)*0.65;
-      cx.save();
-      cx.globalAlpha = a;
-      cx.fillStyle   = p.col;
-      cx.beginPath();
-      cx.arc(pt.x, pt.y, p.sz*(1-i/p.trail.length*0.65), 0, Math.PI*2);
-      cx.fill();
-      cx.restore();
+    cx.save(); cx.globalAlpha=dim?0.25:1;
+    cx.strokeStyle=seg.color+(isSelected?'90':'40'); cx.lineWidth=isSelected?2:1;
+    cx.beginPath(); cx.moveTo(toSX(seg.start),CY+CH); cx.lineTo(toSX(seg.start),CY+CH+6); cx.stroke();
+    cx.restore();
+
+    // Per-segment hover expansion
+    const se=segExpand[si];
+    const chipH=lerp(16,26,se);
+    const chipFs=lerp(9,11.5,se);
+    const chipSp=lerp(22,32,se);
+    const chipPad=lerp(14,22,se);
+
+    // Customer chips — floated ABOVE the peak
+    const peakY=toSY(bellY(seg.mean));
+    const n=seg.customers.length;
+    const segMidX=toSX(seg.mean);
+
+    // ── Summary card (fades in on hover, sits above chip stack) ──
+    if(se>0.01&&!dim){
+      const topChipY=peakY-12-(n-1)*chipSp;
+      const cardW=lerp(130,170,se), cardH=58;
+      const cardX=segMidX-cardW/2;
+      const cardY=topChipY-cardH-10;
+      if(cardY>=CY+4){
+        cx.save(); cx.globalAlpha=se;
+        // Shadow glow
+        cx.shadowColor=seg.color; cx.shadowBlur=20*se;
+        rRect(cx,cardX,cardY,cardW,cardH,10);
+        cx.fillStyle='#060D1A'; cx.fill(); cx.shadowBlur=0;
+        cx.strokeStyle=seg.color+'80'; cx.lineWidth=1.5; cx.stroke();
+        // Coloured top bar
+        rRect(cx,cardX,cardY,cardW,5,10); cx.fillStyle=seg.color; cx.fill();
+        cx.fillRect(cardX,cardY+3,cardW,2);
+        // Content
+        cx.textAlign='center';
+        cx.font=`bold 11px Inter,sans-serif`; cx.fillStyle=seg.color;
+        cx.shadowColor=seg.color; cx.shadowBlur=8;
+        cx.fillText(seg.name,segMidX,cardY+22); cx.shadowBlur=0;
+        cx.font='9px Inter,sans-serif'; cx.fillStyle=DT.muted;
+        cx.fillText(seg.pct+' of Market',segMidX,cardY+36);
+        cx.font='8.5px Inter,sans-serif'; cx.fillStyle=seg.color+'99';
+        // Truncate dtValue to fit card
+        const dvLabel=seg.dtValue.length>22?seg.dtValue.slice(0,21)+'…':seg.dtValue;
+        cx.fillText(dvLabel,segMidX,cardY+50);
+        // "click" hint
+        cx.font='italic 8px Inter,sans-serif'; cx.fillStyle=DT.muted+'99';
+        cx.restore();
+      }
+    }
+
+    seg.customers.forEach((cust,i)=>{
+      const chipY=peakY-12-(n-1-i)*chipSp;
+      if(chipY<CY+6) return;
+      cx.save(); cx.globalAlpha=dim?0.18:1;
+      cx.font=`${chipFs.toFixed(1)}px Inter,sans-serif`;
+      const tw=cx.measureText(cust).width, chipW=tw+chipPad;
+      cx.fillStyle=DT.surface;
+      cx.strokeStyle=seg.color+(isSelected?'90':se>0.5?'80':'55');
+      cx.lineWidth=lerp(1,1.5,se);
+      cx.shadowColor=se>0.3?seg.color:'transparent';
+      cx.shadowBlur=se>0.3?6*se:0;
+      rRect(cx,segMidX-chipW/2,chipY-chipH/2,chipW,chipH,8); cx.fill(); cx.stroke();
+      cx.shadowBlur=0;
+      cx.textAlign='center'; cx.textBaseline='middle';
+      cx.fillStyle=seg.color+(isSelected?'FF':se>0.5?'EE':'CC');
+      cx.fillText(cust,segMidX,chipY); cx.restore();
     });
 
-    cx.save();
-    cx.fillStyle  = '#FFFFFF';
-    cx.shadowColor = p.col;
-    cx.shadowBlur  = 14;
-    cx.beginPath();
-    cx.arc(px, py, p.sz, 0, Math.PI*2);
-    cx.fill();
-    cx.restore();
+    // Connector line peak→chips, thickens on hover
+    if(n>0&&!dim){
+      const bottomChip=peakY-12;
+      if(bottomChip>=CY+6){
+        cx.save();
+        cx.globalAlpha=lerp(0.22,0.5,se);
+        cx.strokeStyle=seg.color; cx.lineWidth=lerp(1,1.5,se);
+        cx.setLineDash([2,3]);
+        cx.beginPath(); cx.moveTo(segMidX,peakY); cx.lineTo(segMidX,bottomChip+8); cx.stroke();
+        cx.restore();
+      }
+    }
+
+    // "Click to explore" hint below chart — only when not already expanded
+    if(isHovered&&se<0.5){
+      cx.save(); cx.textAlign='center'; cx.font='9px Inter,sans-serif';
+      cx.fillStyle=seg.color+'80';
+      cx.fillText('↑ Click to explore in detail',midX,CY+CH-6); cx.restore();
+    }
   });
 }
 
-// ══════════════════════════════════════════════════════════════
-//  DRAW: SEGMENT LABELS + CUSTOMER CHIPS
-// ══════════════════════════════════════════════════════════════
-function drawSegmentContent() {
-  SEGS.forEach(seg => {
-    const midX  = toSX((seg.start+seg.end)/2);
-    const labelY = CY+CH+26;
+// ══ DRAW: CAPABILITIES PANEL ════════════════════════════════
+function drawPanel(alpha){
+  const px=W-MR+12, py=CY, pw=MR-18;
+  cx.save(); cx.globalAlpha=alpha;
+  cx.textAlign='center'; cx.font='bold 10px Inter,sans-serif'; cx.fillStyle=DT.white;
+  cx.fillText('DT PLATFORM',px+pw/2,py+14);
+  cx.font='9px Inter,sans-serif'; cx.fillStyle=DT.muted;
+  cx.fillText('Key Capabilities',px+pw/2,py+28); cx.restore();
 
-    // Segment name
-    cx.save();
-    cx.textAlign  = 'center';
-    cx.font       = 'bold 12px Inter, sans-serif';
-    cx.fillStyle  = seg.color;
-    cx.shadowColor = seg.color;
-    cx.shadowBlur  = 8;
-    cx.fillText(seg.name, midX, labelY);
-    cx.restore();
-
-    cx.save();
-    cx.textAlign = 'center';
-    cx.font      = '10px Inter, sans-serif';
-    cx.fillStyle = DT.muted;
-    cx.fillText(seg.sub, midX, labelY+15);
-    cx.fillText(seg.pct+' of Market', midX, labelY+28);
-    cx.restore();
-
-    // DT value line
-    cx.save();
-    cx.textAlign = 'center';
-    cx.font      = '8.5px Inter, sans-serif';
-    cx.fillStyle = seg.color+'80';
-    cx.fillText('DT: '+seg.dtValue, midX, labelY+42);
-    cx.restore();
-
-    // Boundary tick
-    cx.save();
-    cx.strokeStyle = seg.color+'40';
-    cx.lineWidth   = 1;
-    cx.beginPath();
-    cx.moveTo(toSX(seg.start), CY+CH);
-    cx.lineTo(toSX(seg.start), CY+CH+6);
-    cx.stroke();
-    cx.restore();
-
-    // Customer chips near peak
-    const peakY = toSY(bellY(seg.mean));
-    seg.customers.forEach((cust, i) => {
-      const chipY = peakY + 26 + i*22;
-      if (chipY > CY+CH-8) return;
-
-      cx.save();
-      cx.font = '9px Inter, sans-serif';
-      const tw   = cx.measureText(cust).width;
-      const chipW = tw+14, chipH=16;
-      cx.fillStyle   = seg.color+'18';
-      cx.strokeStyle = seg.color+'50';
-      cx.lineWidth   = 1;
-      rRect(cx, toSX(seg.mean)-chipW/2, chipY-chipH/2, chipW, chipH, 8);
-      cx.fill(); cx.stroke();
-      cx.textAlign    = 'center';
-      cx.textBaseline = 'middle';
-      cx.fillStyle    = seg.color+'CC';
-      cx.fillText(cust, toSX(seg.mean), chipY);
-      cx.restore();
-    });
+  CAPABILITIES.forEach((cap,i)=>{
+    const cy=py+40+i*72, h=62;
+    cx.save(); cx.globalAlpha=alpha;
+    rRect(cx,px,cy,pw,h,8); cx.fillStyle=DT.surface; cx.fill();
+    cx.strokeStyle=cap.color+'35'; cx.lineWidth=1; cx.stroke();
+    cx.fillStyle=cap.color; cx.fillRect(px,cy+10,3,h-20);
+    cx.textAlign='left'; cx.font='14px sans-serif'; cx.fillStyle=cap.color;
+    cx.fillText(cap.icon,px+10,cy+23);
+    cx.font='bold 10px Inter,sans-serif'; cx.fillStyle=DT.white;
+    cx.fillText(cap.name,px+30,cy+23);
+    cx.font='9px Inter,sans-serif'; cx.fillStyle=DT.muted;
+    cx.fillText(cap.desc,px+10,cy+40); cx.restore();
   });
-}
 
-// ══════════════════════════════════════════════════════════════
-//  DRAW: CAPABILITIES PANEL (right)
-// ══════════════════════════════════════════════════════════════
-function drawPanel() {
-  const px = W-MR+12, py=CY, pw=MR-18;
-
-  // Panel title
-  cx.save();
-  cx.textAlign = 'center';
-  cx.font      = 'bold 10px Inter, sans-serif';
-  cx.fillStyle = DT.white;
-  cx.fillText('DT PLATFORM', px+pw/2, py+14);
-  cx.font      = '9px Inter, sans-serif';
-  cx.fillStyle = DT.muted;
-  cx.fillText('Key Capabilities', px+pw/2, py+28);
+  const bx=px, bey=py+40+CAPABILITIES.length*72+8, bw2=pw, bh2=68;
+  cx.save(); cx.globalAlpha=alpha;
+  rRect(cx,bx,bey,bw2,bh2,8); cx.fillStyle=DT.surface; cx.fill();
+  cx.strokeStyle=DT.blue+'40'; cx.lineWidth=1; cx.stroke();
+  cx.textAlign='center'; cx.font='bold 10px Inter,sans-serif'; cx.fillStyle=DT.blue;
+  cx.fillText('CHASM IMPACT',bx+bw2/2,bey+18);
+  ['↓ 80% MTTR','↑ 99.9% SLO','3× faster release'].forEach((s,i)=>{
+    cx.font='9px Inter,sans-serif'; cx.fillStyle=DT.muted;
+    cx.fillText(s,bx+bw2/2,bey+32+i*14);
+  });
   cx.restore();
 
-  CAPABILITIES.forEach((cap, i) => {
-    const cy = py+40 + i*72;
-    const h  = 62;
-    cx.save();
-    rRect(cx, px, cy, pw, h, 8);
-    cx.fillStyle   = DT.surface;
-    cx.fill();
-    cx.strokeStyle = cap.color+'35';
-    cx.lineWidth   = 1;
-    cx.stroke();
-
-    // Left accent bar
-    cx.fillStyle = cap.color;
-    cx.fillRect(px, cy+10, 3, h-20);
-
-    cx.textAlign = 'left';
-    cx.font      = '14px sans-serif';
-    cx.fillStyle = cap.color;
-    cx.fillText(cap.icon, px+10, cy+23);
-
-    cx.font      = 'bold 10px Inter, sans-serif';
-    cx.fillStyle = DT.white;
-    cx.fillText(cap.name, px+30, cy+23);
-
-    cx.font      = '9px Inter, sans-serif';
-    cx.fillStyle = DT.muted;
-    cx.fillText(cap.desc, px+10, cy+40);
-
-    cx.restore();
-  });
-
-  // Bottom insight box
-  const bx = px, bey = py + 40 + CAPABILITIES.length*72 + 8;
-  const bw2 = pw, bh2 = 68;
-  cx.save();
-  rRect(cx, bx, bey, bw2, bh2, 8);
-  cx.fillStyle   = DT.surface;
-  cx.fill();
-  cx.strokeStyle = DT.blue+'40';
-  cx.lineWidth   = 1;
-  cx.stroke();
-
-  cx.textAlign = 'center';
-  cx.font      = 'bold 10px Inter, sans-serif';
-  cx.fillStyle = DT.blue;
-  cx.fillText('CHASM IMPACT', bx+bw2/2, bey+18);
-
-  const stats = ['↓ 80% MTTR', '↑ 99.9% SLO', '3× faster release'];
-  stats.forEach((s, i) => {
-    cx.font      = '9px Inter, sans-serif';
-    cx.fillStyle = DT.muted;
-    cx.fillText(s, bx+bw2/2, bey+32 + i*14);
-  });
+  // Hints
+  cx.save(); cx.globalAlpha=alpha*0.55;
+  cx.textAlign='center'; cx.font='9px Inter,sans-serif'; cx.fillStyle=DT.muted;
+  cx.fillText('Click a segment to explore',px+pw/2,CY+CH+14);
+  cx.fillText('Hover the chasm for context',px+pw/2,CY+CH+26);
   cx.restore();
 }
 
-// ══════════════════════════════════════════════════════════════
-//  DRAW: TITLE + AXES
-// ══════════════════════════════════════════════════════════════
-function drawTitleAxes(t) {
-  // DT Wordmark
+// ══ DRAW: SEGMENT DETAIL MODAL ══════════════════════════════
+function drawSegmentDetail(){
+  if(detailAlpha<0.01)return;
+  const si=selectedSeg!==null?selectedSeg:lastSelectedSeg;
+  const seg=SEGS[si];
+  const det=SEG_DETAIL[si];
+  const a=detailAlpha;
+
+  const pw=650, ph=400;
+  const px=(W-MR-CX-pw)/2+CX, py=(H-ph)/2+8;
+
+  // Update close button position
+  closeBtnX=px+pw-18; closeBtnY=py+18;
+
+  cx.save(); cx.globalAlpha=a;
+
+  // Chart-area scrim
+  cx.fillStyle='#000000B0';
+  cx.fillRect(CX,CY,CW,CH);
+
+  // Panel drop shadow
+  cx.shadowColor=seg.color+'50'; cx.shadowBlur=50;
+  rRect(cx,px,py,pw,ph,14); cx.fillStyle='#070E1C'; cx.fill(); cx.shadowBlur=0;
+
+  // Panel border
+  rRect(cx,px,py,pw,ph,14); cx.strokeStyle=seg.color+'70'; cx.lineWidth=1.5; cx.stroke();
+
+  // Top accent strip
+  rRect(cx,px,py,pw,7,14); cx.fillStyle=seg.color; cx.fill();
+  cx.fillRect(px,py+4,pw,4);
+
+  // Close button
   cx.save();
-  cx.textAlign   = 'left';
-  cx.font        = 'bold 20px Inter, sans-serif';
-  cx.fillStyle   = DT.blue;
-  cx.shadowColor = DT.blue;
-  cx.shadowBlur  = 14;
-  cx.fillText('dynatrace', 28, 40);
+  cx.fillStyle=hoverClose?seg.color+'55':'#0E1B2A';
+  cx.shadowColor=hoverClose?seg.color:'transparent'; cx.shadowBlur=hoverClose?16:0;
+  cx.beginPath(); cx.arc(closeBtnX,closeBtnY,closeBtnR,0,Math.PI*2); cx.fill();
+  cx.strokeStyle=(hoverClose?DT.white:DT.muted)+'60'; cx.lineWidth=1; cx.stroke();
+  cx.fillStyle=hoverClose?DT.white:DT.muted;
+  cx.font='bold 15px sans-serif'; cx.textAlign='center'; cx.textBaseline='middle';
+  cx.fillText('×',closeBtnX,closeBtnY+1); cx.restore();
+
+  // Segment badge pill
+  const badge=seg.name.toUpperCase()+' · '+seg.sub+' · '+seg.pct+' of market';
+  cx.save(); cx.font='bold 9px Inter,sans-serif';
+  const bw3=cx.measureText(badge).width+16;
+  rRect(cx,px+18,py+18,bw3,20,10); cx.fillStyle=seg.color+'22'; cx.fill();
+  cx.strokeStyle=seg.color+'55'; cx.lineWidth=1; cx.stroke();
+  cx.textAlign='left'; cx.textBaseline='middle'; cx.fillStyle=seg.color;
+  cx.fillText(badge,px+26,py+28); cx.restore();
+
+  // Headline
+  cx.save(); cx.font='bold 17px Inter,sans-serif'; cx.fillStyle=DT.white;
+  cx.shadowColor=seg.color; cx.shadowBlur=10;
+  cx.textAlign='left'; cx.fillText(det.headline,px+18,py+58); cx.restore();
+
+  // Body
+  cx.save(); cx.font='10.5px Inter,sans-serif'; cx.fillStyle=DT.muted;
+  cx.textAlign='left'; wrapText(cx,det.body,px+18,py+78,pw-36,16); cx.restore();
+
+  // Two-column section: Challenges | DT Solution
+  const col1X=px+18, col2X=px+pw/2+8, colY=py+130, colW=(pw-50)/2;
+
+  cx.save(); cx.font='bold 9.5px Inter,sans-serif';
+  cx.fillStyle=DT.red; cx.textAlign='left'; cx.fillText('CHALLENGES WITHOUT DT',col1X,colY);
+  cx.fillStyle=DT.cyan; cx.fillText('DYNATRACE SOLUTION',col2X,colY);
+  cx.strokeStyle=DT.red+'45'; cx.lineWidth=1;
+  cx.beginPath(); cx.moveTo(col1X,colY+5); cx.lineTo(col1X+colW,colY+5); cx.stroke();
+  cx.strokeStyle=DT.cyan+'45';
+  cx.beginPath(); cx.moveTo(col2X,colY+5); cx.lineTo(col2X+colW,colY+5); cx.stroke();
   cx.restore();
 
-  cx.save();
-  cx.textAlign = 'left';
-  cx.font      = '8.5px Inter, sans-serif';
-  cx.fillStyle = DT.muted;
-  cx.fillText('AI-Powered Observability', 28, 56);
-  cx.restore();
+  det.painPoints.forEach((p,i)=>{
+    cx.save(); cx.font='10px Inter,sans-serif'; cx.fillStyle=DT.red+'AA';
+    cx.textAlign='left'; cx.fillText('✕  '+p,col1X,colY+18+i*22); cx.restore();
+  });
+  det.dtValue.forEach((v,i)=>{
+    cx.save(); cx.font='10px Inter,sans-serif'; cx.fillStyle=DT.cyan+'AA';
+    cx.textAlign='left'; cx.fillText('✓  '+v,col2X,colY+18+i*22); cx.restore();
+  });
 
-  // Main title
-  cx.save();
-  cx.textAlign   = 'center';
-  cx.font        = 'bold 30px Inter, sans-serif';
-  cx.fillStyle   = DT.white;
-  cx.shadowColor = DT.blue;
-  cx.shadowBlur  = 24;
-  cx.fillText('CROSSING THE CHASM', W/2, 40);
-  cx.restore();
+  // Divider
+  cx.save(); cx.strokeStyle=seg.color+'25'; cx.lineWidth=1;
+  cx.beginPath(); cx.moveTo(px+18,py+245); cx.lineTo(px+pw-18,py+245); cx.stroke(); cx.restore();
 
-  cx.save();
-  cx.textAlign   = 'center';
-  cx.font        = '13px Inter, sans-serif';
-  cx.fillStyle   = DT.teal;
-  cx.shadowColor = DT.teal;
-  cx.shadowBlur  = 8;
-  cx.fillText(
-    'Enterprise Customers Bridging the Observability Gap with the Dynatrace Observability Platform',
-    W/2, 65
-  );
-  cx.restore();
+  // KPI tiles
+  const kpiY=py+260, kpiW=140, kpiGap=22;
+  const totalKpiW=det.kpis.length*(kpiW+kpiGap)-kpiGap;
+  const kpiStartX=px+(pw-totalKpiW)/2;
+  det.kpis.forEach((k,i)=>{
+    const kx=kpiStartX+i*(kpiW+kpiGap);
+    cx.save();
+    rRect(cx,kx,kpiY,kpiW,58,10);
+    cx.fillStyle=seg.color+'15'; cx.fill();
+    cx.strokeStyle=seg.color+'45'; cx.lineWidth=1; cx.stroke();
+    cx.textAlign='center';
+    cx.font=`bold 24px Inter,sans-serif`; cx.fillStyle=seg.color;
+    cx.shadowColor=seg.color; cx.shadowBlur=12;
+    cx.fillText(k.v,kx+kpiW/2,kpiY+32);
+    cx.font='9px Inter,sans-serif'; cx.fillStyle=DT.muted; cx.shadowBlur=0;
+    cx.fillText(k.l,kx+kpiW/2,kpiY+50); cx.restore();
+  });
 
-  // "LIVE" pulse indicator top-right
-  const lx = W-MR-60, ly = 34;
-  const pulse = 0.5+0.5*Math.sin(t*3);
-  cx.save();
-  cx.fillStyle   = DT.green;
-  cx.shadowColor = DT.green;
-  cx.shadowBlur  = 10*pulse;
-  cx.beginPath(); cx.arc(lx, ly, 5, 0, Math.PI*2); cx.fill();
-  cx.font        = '10px Inter, sans-serif';
-  cx.fillStyle   = DT.muted;
-  cx.textAlign   = 'left';
-  cx.fillText('Live Adoption', lx+12, ly+4);
-  cx.restore();
+  // Quote
+  cx.save(); cx.font='italic 10px Inter,sans-serif'; cx.fillStyle=seg.color+'88';
+  cx.textAlign='center';
+  cx.fillText(det.quote,px+pw/2,py+ph-16); cx.restore();
 
-  // Y axis label
-  cx.save();
-  cx.translate(18, CY+CH/2);
-  cx.rotate(-Math.PI/2);
-  cx.textAlign = 'center';
-  cx.font      = '11px Inter, sans-serif';
-  cx.fillStyle = DT.muted;
-  cx.fillText('Market Adoption  ▲', 0, 0);
-  cx.restore();
-
-  // X axis line + label
-  cx.save();
-  cx.strokeStyle = DT.dim;
-  cx.lineWidth   = 1.5;
-  cx.beginPath(); cx.moveTo(CX, CY+CH); cx.lineTo(CX+CW, CY+CH); cx.stroke();
-  cx.fillStyle = DT.muted;
-  cx.font      = '11px Inter, sans-serif';
-  cx.textAlign = 'right';
-  cx.fillText('Technology Adoption Lifecycle  →', CX+CW, CY+CH+14);
-  cx.restore();
-
-  // Before/after column headers
-  cx.save();
-  cx.textAlign = 'center';
-  cx.font      = 'bold 9px Inter, sans-serif';
-  cx.fillStyle = DT.red+'AA';
-  cx.fillText('BEFORE DT', cX1-55, CY+10);
-  cx.fillStyle = DT.cyan+'AA';
-  cx.fillText('AFTER DT', cX2+55, CY+10);
-  cx.restore();
+  cx.restore(); // globalAlpha
 }
 
-// ══════════════════════════════════════════════════════════════
-//  ANIMATION LOOP
-// ══════════════════════════════════════════════════════════════
-let t = 0;
-function frame() {
-  t += 1/60;
-  cx.clearRect(0, 0, W, H);
+// ══ DRAW: TITLE + AXES ══════════════════════════════════════
+function drawTitleAxes(t){
+  cx.save(); cx.textAlign='left'; cx.font='bold 20px Inter,sans-serif';
+  cx.fillStyle=DT.blue; cx.shadowColor=DT.blue; cx.shadowBlur=14;
+  cx.fillText('dynatrace',28,40); cx.restore();
 
+  cx.save(); cx.textAlign='left'; cx.font='8.5px Inter,sans-serif';
+  cx.fillStyle=DT.muted; cx.fillText('AI-Powered Observability',28,56); cx.restore();
+
+  cx.save(); cx.textAlign='center'; cx.font='bold 30px Inter,sans-serif';
+  cx.fillStyle=DT.white; cx.shadowColor=DT.blue; cx.shadowBlur=24;
+  cx.fillText('CROSSING THE CHASM',W/2,40); cx.restore();
+
+  cx.save(); cx.textAlign='center'; cx.font='13px Inter,sans-serif';
+  cx.fillStyle=DT.teal; cx.shadowColor=DT.teal; cx.shadowBlur=8;
+  cx.fillText('Enterprise Customers Bridging the Observability Gap with the Dynatrace Observability Platform',W/2,65); cx.restore();
+
+  const lx=W-MR-60, ly=34, pulse=0.5+0.5*Math.sin(t*3);
+  cx.save(); cx.fillStyle=DT.green; cx.shadowColor=DT.green; cx.shadowBlur=10*pulse;
+  cx.beginPath(); cx.arc(lx,ly,5,0,Math.PI*2); cx.fill();
+  cx.font='10px Inter,sans-serif'; cx.fillStyle=DT.muted; cx.textAlign='left';
+  cx.fillText('Live Adoption',lx+12,ly+4); cx.restore();
+
+  cx.save(); cx.translate(18,CY+CH/2); cx.rotate(-Math.PI/2);
+  cx.textAlign='center'; cx.font='11px Inter,sans-serif'; cx.fillStyle=DT.muted;
+  cx.fillText('Market Adoption  ▲',0,0); cx.restore();
+
+  cx.save(); cx.strokeStyle=DT.dim; cx.lineWidth=1.5;
+  cx.beginPath(); cx.moveTo(CX,CY+CH); cx.lineTo(CX+CW,CY+CH); cx.stroke();
+  cx.fillStyle=DT.muted; cx.font='11px Inter,sans-serif'; cx.textAlign='right';
+  cx.fillText('Technology Adoption Lifecycle  →',CX+CW,CY+CH+14); cx.restore();
+}
+
+// ══ ANIMATION LOOP ══════════════════════════════════════════
+function frame(){
+  t+=1/60;
+
+  chasmExpand+=((chasmHovered?1:0)-chasmExpand)*0.1;
+  detailAlpha+=((selectedSeg!==null?1:0)-detailAlpha)*0.12;
+  SEGS.forEach((_,i)=>{
+    const target=(hoverSeg===i&&selectedSeg===null)?1:0;
+    segExpand[i]+=(target-segExpand[i])*0.12;
+  });
+
+  cx.clearRect(0,0,W,H);
   drawBg(t);
   drawGrid();
   drawChasm(t);
   drawBellCurve();
   drawBridge(t);
-  drawParticles(t);
+  drawParticles();
+  drawChasmOverlay();
   drawSegmentContent();
-  drawPanel();
-  drawTitleAxes(t);
 
+  // Crossfade capabilities ↔ detail
+  const capA=clamp(1-detailAlpha*2,0,1);
+  if(capA>0.01) drawPanel(capA);
+  if(detailAlpha>0.01) drawSegmentDetail();
+
+  drawTitleAxes(t);
   requestAnimationFrame(frame);
 }
 
