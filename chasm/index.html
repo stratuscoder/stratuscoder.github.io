@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1600">
+  <title>Crossing the Chasm — Dynatrace Observability Platform</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:#030812;
+      width:100vw; height:100vh;
+      overflow:hidden;
+      font-family:'Inter','Segoe UI',system-ui,sans-serif;
+    }
+    canvas { display:block; width:100%; height:100%; }
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+// ══════════════════════════════════════════════════════════════
+//  SETUP
+// ══════════════════════════════════════════════════════════════
+const c  = document.getElementById('c');
+const cx = c.getContext('2d');
+const W  = 1600, H = 900;
+c.width  = W; c.height = H;
+c.style.width  = '100vw';
+c.style.height = '100vh';
+
+// Dynatrace design tokens
+const DT = {
+  bg:      '#030812',
+  surface: '#070E1C',
+  grid:    '#0C1C30',
+  blue:    '#1496FF',
+  teal:    '#00D1E8',
+  cyan:    '#00FFD1',
+  purple:  '#7B4FFF',
+  green:   '#5EEAA8',
+  red:     '#FF4D2E',
+  gold:    '#FFD700',
+  orange:  '#FF8C42',
+  white:   '#FFFFFF',
+  muted:   '#7A8FA6',
+  dim:     '#192838',
+};
+
+// Layout
+const ML=75, MR=215, MT=105, MB=88;
+const CX=ML, CY=MT, CW=W-ML-MR, CH=H-MT-MB;
+
+// Chasm X boundaries (fraction of CW)
+const CST=0.297, CEN=0.412;
+const cX1 = CX + CST*CW;
+const cX2 = CX + CEN*CW;
+
+// ══════════════════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════════════════
+const SEGS = [
+  {
+    name:'Innovators', sub:'Technology Enthusiasts', pct:'2.5%',
+    start:0,    end:0.12,  mean:0.060, sigma:0.038, weight:0.52,
+    color:'#9D4EDD',
+    customers:['FinTech R&D','Cloud-Native Startups','Platform Eng. Teams'],
+    dtValue:'Developer Experience APIs',
+  },
+  {
+    name:'Early Adopters', sub:'Visionaries', pct:'13.5%',
+    start:0.12, end:CST,  mean:0.207, sigma:0.058, weight:0.70,
+    color:'#00D1E8',
+    customers:['Digital-First Banks','E-Commerce Leaders','SaaS Pioneers','Gaming Platforms'],
+    dtValue:'Rapid Time-to-Value',
+  },
+  {
+    name:'Early Majority', sub:'Pragmatists', pct:'34%',
+    start:CEN,  end:0.648, mean:0.530, sigma:0.090, weight:1.00,
+    color:'#1496FF',
+    customers:['Global Enterprises','Retail Chains','Healthcare Systems','Telco Providers','Airline Groups'],
+    dtValue:'Full-Stack Observability at Scale',
+  },
+  {
+    name:'Late Majority', sub:'Conservatives', pct:'34%',
+    start:0.648,end:0.862, mean:0.755, sigma:0.078, weight:0.92,
+    color:'#0A72D4',
+    customers:['Government Agencies','Traditional Banks','Insurance Groups','Utilities'],
+    dtValue:'Compliance & Governance',
+  },
+  {
+    name:'Laggards', sub:'Skeptics', pct:'16%',
+    start:0.862,end:1.0,   mean:0.931, sigma:0.048, weight:0.46,
+    color:'#3D5A99',
+    customers:['Legacy Industries'],
+    dtValue:'Modernization Path',
+  },
+];
+
+const CAPABILITIES = [
+  { icon:'⚡', name:'Davis® AI', desc:'Autonomous root-cause', color:DT.gold },
+  { icon:'🔭', name:'Full-Stack Obs.', desc:'600+ integrations', color:DT.teal },
+  { icon:'🛡️', name:'App Security', desc:'Runtime protection', color:DT.orange },
+  { icon:'⚙️', name:'AutoDiscovery', desc:'Zero-touch deploy', color:DT.green },
+  { icon:'📊', name:'Business Ops', desc:'Revenue impact link', color:DT.blue },
+];
+
+const BRIDGE_FEATURES = ['Davis® AI','Auto-Discovery','Full-Stack','AIOps','BizOps Analytics'];
+const BRIDGE_COLORS   = [DT.gold, DT.cyan, DT.blue, DT.teal, DT.orange];
+
+const BEFORE = ['Manual War Rooms','Alert Fatigue','Finger-Pointing','Slow MTTR'];
+const AFTER  = ['Autonomous AIOps','Precise Root-Cause','Auto-Remediation','Sub-Minute MTTR'];
+
+// ══════════════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════════════
+function rRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.arcTo(x+w, y, x+w, y+r, r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+  ctx.lineTo(x+r, y+h);
+  ctx.arcTo(x, y+h, x, y+h-r, r);
+  ctx.lineTo(x, y+r);
+  ctx.arcTo(x, y, x+r, y, r);
+  ctx.closePath();
+}
+
+function gauss(x, mean, sigma) {
+  return Math.exp(-0.5*((x-mean)/sigma)**2);
+}
+
+function bellY(xFrac) {
+  let val = 0;
+  for (const s of SEGS) {
+    const v = gauss(xFrac, s.mean, s.sigma) * s.weight;
+    if (v > val) val = v;
+  }
+  return val;
+}
+
+function toSX(frac) { return CX + frac*CW; }
+function toSY(val)  { return CY + CH - val*CH*0.86; }
+
+// ══════════════════════════════════════════════════════════════
+//  PRE-COMPUTE STATICS
+// ══════════════════════════════════════════════════════════════
+const STARS = Array.from({length:180}, () => ({
+  x: Math.random()*W, y: Math.random()*(H*0.6),
+  r: Math.random()*1.5+0.2, a: Math.random()*0.5+0.1,
+  ph: Math.random()*Math.PI*2,
+}));
+
+// Matrix rain in chasm
+const RAIN_COLS = Math.floor((cX2-cX1)/11);
+const RAIN = Array.from({length:RAIN_COLS}, () => ({
+  y: Math.random()*CH, speed: 0.18+Math.random()*0.5,
+  chars: Array.from({length:22}, () => Math.random()>0.5?'1':'0'),
+}));
+
+// Particles crossing bridge
+const PARTS = Array.from({length:22}, () => ({
+  t: Math.random(), speed: 0.0025+Math.random()*0.004,
+  sz: 2+Math.random()*2.5, trail: [],
+  col: Math.random()>0.5 ? DT.cyan : DT.blue,
+}));
+
+// Customer company dots floating in segments
+const COMPANY_DOTS = SEGS.flatMap(s =>
+  s.customers.map((name, i) => ({
+    name, seg: s,
+    xFrac: s.mean + (Math.random()-0.5)*0.04,
+    yOff: 28+i*22,
+    ph: Math.random()*Math.PI*2,
+  }))
+);
+
+// ══════════════════════════════════════════════════════════════
+//  DRAW: BACKGROUND
+// ══════════════════════════════════════════════════════════════
+function drawBg(t) {
+  // Base fill
+  cx.fillStyle = DT.bg;
+  cx.fillRect(0, 0, W, H);
+
+  // Nebula centre-glow
+  const neb = cx.createRadialGradient(W/2, H*0.48, 0, W/2, H*0.48, W*0.42);
+  neb.addColorStop(0,   '#1496FF09');
+  neb.addColorStop(0.5, '#00D1E805');
+  neb.addColorStop(1,   'transparent');
+  cx.fillStyle = neb;
+  cx.fillRect(0, 0, W, H);
+
+  // Stars
+  STARS.forEach(s => {
+    const tw = 0.7+0.3*Math.sin(t*0.7+s.ph);
+    cx.save();
+    cx.globalAlpha = s.a*tw;
+    cx.fillStyle = '#FFFFFF';
+    cx.beginPath();
+    cx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    cx.fill();
+    cx.restore();
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DRAW: GRID
+// ══════════════════════════════════════════════════════════════
+function drawGrid() {
+  cx.save();
+  cx.strokeStyle = DT.grid;
+  cx.lineWidth   = 1;
+  cx.globalAlpha = 0.7;
+  for (let i=0;i<=12;i++) {
+    const x = CX+(i/12)*CW;
+    cx.beginPath(); cx.moveTo(x, CY); cx.lineTo(x, CY+CH); cx.stroke();
+  }
+  for (let i=0;i<=6;i++) {
+    const y = CY+(i/6)*CH;
+    cx.beginPath(); cx.moveTo(CX,y); cx.lineTo(CX+CW,y); cx.stroke();
+  }
+  cx.restore();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DRAW: CHASM VOID
+// ══════════════════════════════════════════════════════════════
+function drawChasm(t) {
+  const x1=cX1, x2=cX2, cw=x2-x1;
+
+  // Deep void
+  cx.fillStyle = '#00000095';
+  cx.fillRect(x1, CY, cw, CH);
+
+  // Matrix rain
+  cx.save();
+  cx.font = '9px monospace';
+  RAIN.forEach((col, i) => {
+    col.y = (col.y + col.speed*1.8) % CH;
+    col.chars.forEach((ch, j) => {
+      const ry    = CY + (col.y + j*13) % CH;
+      const alpha = Math.max(0, 0.4 - j*0.02);
+      cx.globalAlpha = alpha;
+      cx.fillStyle   = '#00FF44';
+      cx.fillText(ch, x1 + i*(cw/RAIN_COLS)+2, ry);
+    });
+  });
+  cx.restore();
+
+  // Left danger edge glow
+  const lg = cx.createLinearGradient(x1-35, 0, x1, 0);
+  lg.addColorStop(0, 'transparent'); lg.addColorStop(1, '#FF4D2E28');
+  cx.fillStyle = lg; cx.fillRect(x1-35, CY, 35, CH);
+
+  // Right opportunity glow
+  const rg = cx.createLinearGradient(x2, 0, x2+35, 0);
+  rg.addColorStop(0, '#1496FF28'); rg.addColorStop(1, 'transparent');
+  cx.fillStyle = rg; cx.fillRect(x2, CY, 35, CH);
+
+  // Boundary dashes
+  cx.save();
+  cx.setLineDash([5,5]);
+  cx.lineWidth = 1.5;
+  cx.strokeStyle = '#FF4D2E55';
+  cx.beginPath(); cx.moveTo(x1, CY); cx.lineTo(x1, CY+CH); cx.stroke();
+  cx.strokeStyle = '#1496FF55';
+  cx.beginPath(); cx.moveTo(x2, CY); cx.lineTo(x2, CY+CH); cx.stroke();
+  cx.restore();
+
+  // "THE CHASM" rotated label
+  cx.save();
+  cx.translate((x1+x2)/2, CY+CH/2+50);
+  cx.rotate(-Math.PI/2);
+  cx.textAlign = 'center';
+  cx.font = 'bold 10px Inter, sans-serif';
+  cx.globalAlpha = 0.45 + 0.25*Math.sin(t*1.4);
+  cx.fillStyle = '#FF4D2E';
+  cx.fillText('T H E   C H A S M', 0, 0);
+  cx.restore();
+
+  // Before/After diagnostic pills
+  const pill = (texts, px, py, col) => {
+    texts.forEach((txt, i) => {
+      const tw  = cx.measureText(txt).width;
+      const pw  = tw+14, ph=18;
+      const ey  = py + i*24;
+      cx.save();
+      cx.fillStyle   = col+'18';
+      cx.strokeStyle = col+'50';
+      cx.lineWidth   = 1;
+      rRect(cx, px-pw/2, ey-ph/2, pw, ph, 9);
+      cx.fill(); cx.stroke();
+      cx.textAlign    = 'center';
+      cx.textBaseline = 'middle';
+      cx.font         = '9px Inter, sans-serif';
+      cx.fillStyle    = col+'CC';
+      cx.fillText(txt, px, ey);
+      cx.restore();
+    });
+  };
+  pill(BEFORE, x1-55, CY+20, DT.red);
+  pill(AFTER,  x2+55, CY+20, DT.cyan);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DRAW: BELL CURVE SEGMENTS
+// ══════════════════════════════════════════════════════════════
+function drawBellCurve() {
+  SEGS.forEach(seg => {
+    const STEPS  = 150;
+    const startX = toSX(seg.start);
+    const endX   = toSX(seg.end);
+
+    const grad = cx.createLinearGradient(0, CY, 0, CY+CH);
+    grad.addColorStop(0,   seg.color+'DD');
+    grad.addColorStop(0.6, seg.color+'44');
+    grad.addColorStop(1,   seg.color+'08');
+
+    // Filled area
+    cx.save();
+    cx.shadowColor = seg.color;
+    cx.shadowBlur  = 18;
+    cx.beginPath();
+    cx.moveTo(startX, CY+CH);
+    for (let i=0;i<=STEPS;i++) {
+      const xf = seg.start + (i/STEPS)*(seg.end-seg.start);
+      cx.lineTo(toSX(xf), toSY(bellY(xf)));
+    }
+    cx.lineTo(endX, CY+CH);
+    cx.closePath();
+    cx.fillStyle = grad;
+    cx.fill();
+    cx.restore();
+
+    // Glowing outline
+    cx.save();
+    cx.shadowColor = seg.color;
+    cx.shadowBlur  = 12;
+    cx.strokeStyle = seg.color;
+    cx.lineWidth   = 2.5;
+    cx.beginPath();
+    for (let i=0;i<=STEPS;i++) {
+      const xf = seg.start + (i/STEPS)*(seg.end-seg.start);
+      i===0
+        ? cx.moveTo(toSX(xf), toSY(bellY(xf)))
+        : cx.lineTo(toSX(xf), toSY(bellY(xf)));
+    }
+    cx.stroke();
+    cx.restore();
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DRAW: DYNATRACE BRIDGE
+// ══════════════════════════════════════════════════════════════
+function drawBridge(t) {
+  const bx1 = cX1 - 75, bx2 = cX2 + 75;
+  const bw   = bx2 - bx1;
+  const midX = (bx1+bx2)/2;
+
+  // Bridge sits at 38% from top
+  const bY  = CY + CH*0.37;
+  const bH  = 40;
+  const bm  = 4; // beam thickness
+
+  // === Arch over the bridge ===
+  const archTop = bY - 80;
+  cx.save();
+  cx.strokeStyle = DT.cyan;
+  cx.lineWidth   = 2;
+  cx.shadowColor = DT.cyan;
+  cx.shadowBlur  = 20;
+
+  const archGrad = cx.createLinearGradient(bx1, 0, bx2, 0);
+  archGrad.addColorStop(0, DT.cyan+'00');
+  archGrad.addColorStop(0.15, DT.teal);
+  archGrad.addColorStop(0.5, DT.blue);
+  archGrad.addColorStop(0.85, DT.teal);
+  archGrad.addColorStop(1, DT.cyan+'00');
+
+  cx.strokeStyle = archGrad;
+  cx.beginPath();
+  cx.moveTo(bx1+30, bY);
+  cx.bezierCurveTo(bx1+30, archTop, bx2-30, archTop, bx2-30, bY);
+  cx.stroke();
+
+  // Arch support lines (like a suspension bridge)
+  cx.lineWidth   = 1;
+  cx.globalAlpha = 0.4;
+  [0.2,0.35,0.5,0.65,0.8].forEach(frac => {
+    const sx = bx1+30 + frac*(bw-60);
+    cx.strokeStyle = DT.cyan;
+    cx.beginPath();
+    cx.moveTo(sx, archTop + (frac<0.5 ? frac*2 : (1-frac)*2) * (bY-archTop));
+    cx.lineTo(sx, bY);
+    cx.stroke();
+  });
+  cx.restore();
+
+  // === Horizontal platform ===
+  const platGrad = cx.createLinearGradient(bx1, 0, bx2, 0);
+  platGrad.addColorStop(0,    DT.cyan+'00');
+  platGrad.addColorStop(0.1,  DT.cyan+'CC');
+  platGrad.addColorStop(0.5,  DT.blue+'FF');
+  platGrad.addColorStop(0.9,  DT.cyan+'CC');
+  platGrad.addColorStop(1,    DT.cyan+'00');
+
+  cx.save();
+  cx.shadowColor = DT.cyan;
+  cx.shadowBlur  = 30;
+  cx.fillStyle   = platGrad;
+  cx.fillRect(bx1, bY, bw, bm);            // top beam
+  cx.fillRect(bx1, bY+bH, bw, bm);         // bottom beam
+  cx.restore();
+
+  // Platform interior fill
+  const fillGrad = cx.createLinearGradient(0, bY, 0, bY+bH);
+  fillGrad.addColorStop(0, DT.cyan+'1A');
+  fillGrad.addColorStop(1, DT.blue+'0A');
+  cx.fillStyle = fillGrad;
+  cx.fillRect(bx1, bY+bm, bw, bH-bm);
+
+  // Vertical struts
+  cx.save();
+  cx.strokeStyle = DT.cyan+'45';
+  cx.lineWidth   = 1.2;
+  for (let i=0;i<=7;i++) {
+    const sx = bx1 + (i/7)*bw;
+    cx.beginPath(); cx.moveTo(sx, bY); cx.lineTo(sx, bY+bH+bm); cx.stroke();
+  }
+  cx.restore();
+
+  // Platform label
+  cx.save();
+  cx.textAlign    = 'center';
+  cx.textBaseline = 'middle';
+  cx.font         = 'bold 11.5px Inter, sans-serif';
+  cx.fillStyle    = DT.white;
+  cx.shadowColor  = DT.cyan;
+  cx.shadowBlur   = 12;
+  cx.fillText('DYNATRACE OBSERVABILITY PLATFORM', midX, bY+bH/2+3);
+  cx.restore();
+
+  // === Feature badges above platform ===
+  BRIDGE_FEATURES.forEach((f, i) => {
+    const fx  = bx1 + (i+0.5)/BRIDGE_FEATURES.length*bw;
+    const fy  = bY - 32;
+    const col = BRIDGE_COLORS[i];
+    cx.save();
+    const tw  = cx.measureText(f).width;
+    const bfw = tw+16, bfh=20;
+    cx.fillStyle   = col+'22';
+    cx.strokeStyle = col+'70';
+    cx.lineWidth   = 1;
+    rRect(cx, fx-bfw/2, fy-bfh/2, bfw, bfh, 10);
+    cx.fill(); cx.stroke();
+    cx.textAlign    = 'center';
+    cx.textBaseline = 'middle';
+    cx.font         = 'bold 9px Inter, sans-serif';
+    cx.fillStyle    = col;
+    cx.fillText(f, fx, fy);
+
+    // Dotted line down to bridge
+    cx.strokeStyle  = col+'40';
+    cx.lineWidth    = 1;
+    cx.setLineDash([2,3]);
+    cx.beginPath();
+    cx.moveTo(fx, fy+bfh/2);
+    cx.lineTo(fx, bY);
+    cx.stroke();
+    cx.restore();
+  });
+
+  // Pulsing aura on platform
+  const pulse = 0.4 + 0.3*Math.sin(t*2.2);
+  cx.save();
+  cx.globalAlpha = 0.18*pulse;
+  const aura = cx.createRadialGradient(midX, bY+bH/2, 0, midX, bY+bH/2, bw/2.5);
+  aura.addColorStop(0, DT.cyan);
+  aura.addColorStop(1, 'transparent');
+  cx.fillStyle = aura;
+  cx.fillRect(bx1, bY-60, bw, bH+120);
+  cx.restore();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DRAW: FLOWING PARTICLES
+// ══════════════════════════════════════════════════════════════
+function drawParticles(t) {
+  const bx1    = cX1-75, bx2=cX2+75;
+  const bridgeY = CY + CH*0.37 + 22;
+
+  PARTS.forEach(p => {
+    p.t = (p.t+p.speed) % 1;
+    const px = bx1 + p.t*(bx2-bx1);
+    const py = bridgeY + Math.sin(p.t*Math.PI*5)*7;
+
+    p.trail.unshift({x:px, y:py});
+    if (p.trail.length > 14) p.trail.pop();
+
+    p.trail.forEach((pt, i) => {
+      const a = (1 - i/p.trail.length)*0.65;
+      cx.save();
+      cx.globalAlpha = a;
+      cx.fillStyle   = p.col;
+      cx.beginPath();
+      cx.arc(pt.x, pt.y, p.sz*(1-i/p.trail.length*0.65), 0, Math.PI*2);
+      cx.fill();
+      cx.restore();
+    });
+
+    cx.save();
+    cx.fillStyle  = '#FFFFFF';
+    cx.shadowColor = p.col;
+    cx.shadowBlur  = 14;
+    cx.beginPath();
+    cx.arc(px, py, p.sz, 0, Math.PI*2);
+    cx.fill();
+    cx.restore();
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DRAW: SEGMENT LABELS + CUSTOMER CHIPS
+// ══════════════════════════════════════════════════════════════
+function drawSegmentContent() {
+  SEGS.forEach(seg => {
+    const midX  = toSX((seg.start+seg.end)/2);
+    const labelY = CY+CH+26;
+
+    // Segment name
+    cx.save();
+    cx.textAlign  = 'center';
+    cx.font       = 'bold 12px Inter, sans-serif';
+    cx.fillStyle  = seg.color;
+    cx.shadowColor = seg.color;
+    cx.shadowBlur  = 8;
+    cx.fillText(seg.name, midX, labelY);
+    cx.restore();
+
+    cx.save();
+    cx.textAlign = 'center';
+    cx.font      = '10px Inter, sans-serif';
+    cx.fillStyle = DT.muted;
+    cx.fillText(seg.sub, midX, labelY+15);
+    cx.fillText(seg.pct+' of Market', midX, labelY+28);
+    cx.restore();
+
+    // DT value line
+    cx.save();
+    cx.textAlign = 'center';
+    cx.font      = '8.5px Inter, sans-serif';
+    cx.fillStyle = seg.color+'80';
+    cx.fillText('DT: '+seg.dtValue, midX, labelY+42);
+    cx.restore();
+
+    // Boundary tick
+    cx.save();
+    cx.strokeStyle = seg.color+'40';
+    cx.lineWidth   = 1;
+    cx.beginPath();
+    cx.moveTo(toSX(seg.start), CY+CH);
+    cx.lineTo(toSX(seg.start), CY+CH+6);
+    cx.stroke();
+    cx.restore();
+
+    // Customer chips near peak
+    const peakY = toSY(bellY(seg.mean));
+    seg.customers.forEach((cust, i) => {
+      const chipY = peakY + 26 + i*22;
+      if (chipY > CY+CH-8) return;
+
+      cx.save();
+      cx.font = '9px Inter, sans-serif';
+      const tw   = cx.measureText(cust).width;
+      const chipW = tw+14, chipH=16;
+      cx.fillStyle   = seg.color+'18';
+      cx.strokeStyle = seg.color+'50';
+      cx.lineWidth   = 1;
+      rRect(cx, toSX(seg.mean)-chipW/2, chipY-chipH/2, chipW, chipH, 8);
+      cx.fill(); cx.stroke();
+      cx.textAlign    = 'center';
+      cx.textBaseline = 'middle';
+      cx.fillStyle    = seg.color+'CC';
+      cx.fillText(cust, toSX(seg.mean), chipY);
+      cx.restore();
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DRAW: CAPABILITIES PANEL (right)
+// ══════════════════════════════════════════════════════════════
+function drawPanel() {
+  const px = W-MR+12, py=CY, pw=MR-18;
+
+  // Panel title
+  cx.save();
+  cx.textAlign = 'center';
+  cx.font      = 'bold 10px Inter, sans-serif';
+  cx.fillStyle = DT.white;
+  cx.fillText('DT PLATFORM', px+pw/2, py+14);
+  cx.font      = '9px Inter, sans-serif';
+  cx.fillStyle = DT.muted;
+  cx.fillText('Key Capabilities', px+pw/2, py+28);
+  cx.restore();
+
+  CAPABILITIES.forEach((cap, i) => {
+    const cy = py+40 + i*72;
+    const h  = 62;
+    cx.save();
+    rRect(cx, px, cy, pw, h, 8);
+    cx.fillStyle   = DT.surface;
+    cx.fill();
+    cx.strokeStyle = cap.color+'35';
+    cx.lineWidth   = 1;
+    cx.stroke();
+
+    // Left accent bar
+    cx.fillStyle = cap.color;
+    cx.fillRect(px, cy+10, 3, h-20);
+
+    cx.textAlign = 'left';
+    cx.font      = '14px sans-serif';
+    cx.fillStyle = cap.color;
+    cx.fillText(cap.icon, px+10, cy+23);
+
+    cx.font      = 'bold 10px Inter, sans-serif';
+    cx.fillStyle = DT.white;
+    cx.fillText(cap.name, px+30, cy+23);
+
+    cx.font      = '9px Inter, sans-serif';
+    cx.fillStyle = DT.muted;
+    cx.fillText(cap.desc, px+10, cy+40);
+
+    cx.restore();
+  });
+
+  // Bottom insight box
+  const bx = px, bey = py + 40 + CAPABILITIES.length*72 + 8;
+  const bw2 = pw, bh2 = 68;
+  cx.save();
+  rRect(cx, bx, bey, bw2, bh2, 8);
+  cx.fillStyle   = DT.surface;
+  cx.fill();
+  cx.strokeStyle = DT.blue+'40';
+  cx.lineWidth   = 1;
+  cx.stroke();
+
+  cx.textAlign = 'center';
+  cx.font      = 'bold 10px Inter, sans-serif';
+  cx.fillStyle = DT.blue;
+  cx.fillText('CHASM IMPACT', bx+bw2/2, bey+18);
+
+  const stats = ['↓ 80% MTTR', '↑ 99.9% SLO', '3× faster release'];
+  stats.forEach((s, i) => {
+    cx.font      = '9px Inter, sans-serif';
+    cx.fillStyle = DT.muted;
+    cx.fillText(s, bx+bw2/2, bey+32 + i*14);
+  });
+  cx.restore();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DRAW: TITLE + AXES
+// ══════════════════════════════════════════════════════════════
+function drawTitleAxes(t) {
+  // DT Wordmark
+  cx.save();
+  cx.textAlign   = 'left';
+  cx.font        = 'bold 20px Inter, sans-serif';
+  cx.fillStyle   = DT.blue;
+  cx.shadowColor = DT.blue;
+  cx.shadowBlur  = 14;
+  cx.fillText('dynatrace', 28, 40);
+  cx.restore();
+
+  cx.save();
+  cx.textAlign = 'left';
+  cx.font      = '8.5px Inter, sans-serif';
+  cx.fillStyle = DT.muted;
+  cx.fillText('AI-Powered Observability', 28, 56);
+  cx.restore();
+
+  // Main title
+  cx.save();
+  cx.textAlign   = 'center';
+  cx.font        = 'bold 30px Inter, sans-serif';
+  cx.fillStyle   = DT.white;
+  cx.shadowColor = DT.blue;
+  cx.shadowBlur  = 24;
+  cx.fillText('CROSSING THE CHASM', W/2, 40);
+  cx.restore();
+
+  cx.save();
+  cx.textAlign   = 'center';
+  cx.font        = '13px Inter, sans-serif';
+  cx.fillStyle   = DT.teal;
+  cx.shadowColor = DT.teal;
+  cx.shadowBlur  = 8;
+  cx.fillText(
+    'Enterprise Customers Bridging the Observability Gap with the Dynatrace Observability Platform',
+    W/2, 65
+  );
+  cx.restore();
+
+  // "LIVE" pulse indicator top-right
+  const lx = W-MR-60, ly = 34;
+  const pulse = 0.5+0.5*Math.sin(t*3);
+  cx.save();
+  cx.fillStyle   = DT.green;
+  cx.shadowColor = DT.green;
+  cx.shadowBlur  = 10*pulse;
+  cx.beginPath(); cx.arc(lx, ly, 5, 0, Math.PI*2); cx.fill();
+  cx.font        = '10px Inter, sans-serif';
+  cx.fillStyle   = DT.muted;
+  cx.textAlign   = 'left';
+  cx.fillText('Live Adoption', lx+12, ly+4);
+  cx.restore();
+
+  // Y axis label
+  cx.save();
+  cx.translate(18, CY+CH/2);
+  cx.rotate(-Math.PI/2);
+  cx.textAlign = 'center';
+  cx.font      = '11px Inter, sans-serif';
+  cx.fillStyle = DT.muted;
+  cx.fillText('Market Adoption  ▲', 0, 0);
+  cx.restore();
+
+  // X axis line + label
+  cx.save();
+  cx.strokeStyle = DT.dim;
+  cx.lineWidth   = 1.5;
+  cx.beginPath(); cx.moveTo(CX, CY+CH); cx.lineTo(CX+CW, CY+CH); cx.stroke();
+  cx.fillStyle = DT.muted;
+  cx.font      = '11px Inter, sans-serif';
+  cx.textAlign = 'right';
+  cx.fillText('Technology Adoption Lifecycle  →', CX+CW, CY+CH+14);
+  cx.restore();
+
+  // Before/after column headers
+  cx.save();
+  cx.textAlign = 'center';
+  cx.font      = 'bold 9px Inter, sans-serif';
+  cx.fillStyle = DT.red+'AA';
+  cx.fillText('BEFORE DT', cX1-55, CY+10);
+  cx.fillStyle = DT.cyan+'AA';
+  cx.fillText('AFTER DT', cX2+55, CY+10);
+  cx.restore();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ANIMATION LOOP
+// ══════════════════════════════════════════════════════════════
+let t = 0;
+function frame() {
+  t += 1/60;
+  cx.clearRect(0, 0, W, H);
+
+  drawBg(t);
+  drawGrid();
+  drawChasm(t);
+  drawBellCurve();
+  drawBridge(t);
+  drawParticles(t);
+  drawSegmentContent();
+  drawPanel();
+  drawTitleAxes(t);
+
+  requestAnimationFrame(frame);
+}
+
+frame();
+</script>
+</body>
+</html>
